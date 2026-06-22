@@ -1,0 +1,248 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1rem 0.25rem 2rem}
+.sec-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);letter-spacing:0.04em;padding:1.5rem 0 0.5rem;border-top:0.5px solid var(--color-border-tertiary);margin-top:0.5rem}
+.sec-title:first-child{border-top:none;padding-top:0}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:10px;overflow:hidden}
+.card-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background 0.12s}
+.card-header:hover{background:var(--color-background-secondary)}
+.card-icon{font-size:17px;color:var(--color-text-secondary)}
+.card-title{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1}
+.card-tag{font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.tag-normal{background:#E1F5EE;color:#085041;border:0.5px solid #5DCAA5}
+.tag-warn{background:#FAEEDA;color:#633806;border:0.5px solid #EF9F27}
+.tag-alert{background:#FCEBEB;color:#791F1F;border:0.5px solid #F09595}
+.tag-special{background:#EEEDFE;color:#3C3489;border:0.5px solid #AFA9EC}
+.chevron{font-size:12px;color:var(--color-text-tertiary);transition:transform 0.2s}
+.chevron.open{transform:rotate(180deg)}
+.card-body{display:none;padding:0 14px 14px;border-top:0.5px solid var(--color-border-tertiary)}
+.card-body.open{display:block}
+.situation{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:12px}
+.sit-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px;letter-spacing:0.03em}
+.sit-text{font-size:13px;color:var(--color-text-primary);line-height:1.6}
+.steps{margin-top:10px}
+.step-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px;letter-spacing:0.03em}
+.step{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.step-num{min-width:20px;height:20px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);font-size:11px;font-weight:500;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step-text{font-size:13px;color:var(--color-text-primary);line-height:1.6}
+.note{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-top:8px;padding:8px 10px;border-left:3px solid var(--color-border-secondary);border-radius:0}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:12px 0}
+.path{font-size:12px;color:var(--color-text-tertiary);margin-top:8px}
+</style>
+
+<h2 class="sr-only">庫存數量相關 SOP：依情況說明做法，可點擊展開每張卡片</h2>
+
+<div class="wrap" id="root"></div>
+
+<script>
+const sections = [
+  {
+    title: "一、發票審核與勾稽",
+    cards: [
+      {
+        icon: "ti-file-invoice", title: "正常情況：審核並勾稽發票", tag: "每月必做", tagClass: "tag-normal",
+        situation: "每月月底，收到資材提供的實體發票後進行審核。",
+        path: "供應鏈 → 採購管理 → 採購發票 → 採購發票維護（條件：時間=本期、供貨單位=廠商名稱）",
+        steps: [
+          "確認發票抬頭與統編是否正確",
+          "依業務類型區分：外購入庫金額 or 委外加工金額（填在紙本單據上）",
+          "確認未稅金額、稅額與系統是否一致",
+          "確認序時簿的日期與申報日期均在當月",
+          "全選 → 啟動審核 → 審核",
+          "確認勾稽狀態與勾稽期間是否在當月"
+        ],
+        note: "付款日期系統依付款條件自動計算，若遇假日則順延工作日。無實物退回、直出不需勾稽。"
+      },
+      {
+        icon: "ti-alert-triangle", title: "異常：同時有外購入庫＋委外加工，金額不一致", tag: "注意", tagClass: "tag-warn",
+        situation: "當一張發票同時含外購入庫與委外加工，導致未稅金額或稅額與系統不一致。",
+        steps: [
+          "以「外購入庫的購貨發票金額」為準",
+          "直接修改系統金額使其一致",
+          "保存後再進行審核"
+        ]
+      },
+      {
+        icon: "ti-git-branch", title: "異常：無法勾稽", tag: "需處理", tagClass: "tag-alert",
+        situation: "審核後發現發票無法完成勾稽，通常是因為外購入庫／委外加工入庫／委外工序接收未完整下推購貨發票。",
+        steps: [
+          "刪除該筆購貨發票",
+          "至序時簿找到對應單據，點選「編輯 → 拆分單據」",
+          "進入修改畫面，找到「拆分數量」欄位，輸入要拆分的數量後保存",
+          "重新下推購貨發票",
+          "再次進行審核與勾稽"
+        ]
+      }
+    ]
+  },
+  {
+    title: "二、折讓處理",
+    cards: [
+      {
+        icon: "ti-receipt-off", title: "無實物退回（只有金額折讓）", tag: "折讓", tagClass: "tag-special",
+        situation: "廠商給予折扣，但貨物不退回，只做金額上的調整。",
+        steps: [
+          "全選下推購貨發票(專用) → 生成紅字發票",
+          "改折扣率：折3% → 輸入97%；折5% → 輸入95%",
+          "確認金額與稅額，有尾差則手動調整",
+          "確認申報日期 → 審核（此類無須勾稽）",
+          "在紙本單據上寫上單號（折XXXX）",
+          "審核後系統自動產生成本調整單",
+          "至「供應鏈 → 存貨核算 → 期初調整 → 成本調整單」找出對應採購發票單號",
+          "填入倉庫.倉位（可從藍字發票查得）→ 審核",
+          "在紙本上寫成本調整單號（AMXXXX）"
+        ],
+        note: "若上月入庫、本月折讓，且料號本月期初庫存為0或無入庫，折讓產生的成本調整單可能使庫存金額變負數。此時需刪除該料號，將折讓金額分攤至其他料號。"
+      },
+      {
+        icon: "ti-package-export", title: "有實物退回", tag: "折讓", tagClass: "tag-special",
+        situation: "貨物實際退還給廠商，採購會主動從外購入庫單（紅字）下推購貨發票（紅字）。",
+        steps: [
+          "確認進折類型為「實物退回」",
+          "只開折讓單即可",
+          "不會產生成本調整單，無需額外處理"
+        ]
+      }
+    ]
+  },
+  {
+    title: "三、下推營業稅資料",
+    cards: [
+      {
+        icon: "ti-file-text", title: "每張審核勾稽後的發票都要做", tag: "每月必做", tagClass: "tag-normal",
+        situation: "採購發票完成審核與勾稽後，需下推生成營業稅購貨發票並完成申報登錄。",
+        steps: [
+          "在序時簿找到已審核的採購發票",
+          "下推生成「營業稅購貨發票」",
+          "登打發票資訊（先在 Excel 整理後再填入）",
+          "確認申請日期為 VAT 申報月份",
+          "保存 → 審核",
+          "在實體發票上寫上營業稅購貨發票單號"
+        ]
+      }
+    ]
+  },
+  {
+    title: "四、應付款管理",
+    cards: [
+      {
+        icon: "ti-credit-card", title: "A｜一般付款（最常見）", tag: "一般", tagClass: "tag-normal",
+        situation: "貨款無需應收應付互抵，也非預付貨款的標準付款情境。",
+        path: "財務會計 → 應付款 → 採購對帳付款平台 → 採購付款平台（核算項目類別：供應商）",
+        steps: [
+          "核算項目選供應商名稱，核對金額",
+          "全選 → 付款 → 下推付款單",
+          "修改單據日期與財務日期為預計付款日（不可是假日）",
+          "確認付款金額正確",
+          "付款行：玉山乙存；現金類科目：銀行存款-玉山乙存",
+          "保存 → 啟動審核 → 審核",
+          "將付款日期與付款單號抄寫至發票上"
+        ]
+      },
+      {
+        icon: "ti-arrows-exchange", title: "B｜應收應付互抵", tag: "互抵", tagClass: "tag-special",
+        situation: "與廠商同時有應付帳款與應收帳款，需先互相抵銷再付差額。",
+        steps: [
+          "至「應付沖應收款」功能",
+          "登打相對應廠商及客戶代碼",
+          "勾選要互抵的應收與應付項目 → 點選核銷",
+          "核銷完成後，再跑 A 流程下推付款申請單",
+          "確認金額是否正確（若不正確，代表核銷有誤）",
+          "至核銷日志 → 找到已核銷項目 → 點選反核銷 → 重新核銷"
+        ]
+      },
+      {
+        icon: "ti-coin", title: "C｜預付貨款核銷", tag: "預付", tagClass: "tag-special",
+        situation: "貨款已事先預付，待取得採購發票後需進行核銷。",
+        steps: [
+          "等採購發票完成流程一（審核、勾稽、營業稅）",
+          "至「付款結算」功能",
+          "找到對應的預付款記錄進行核銷"
+        ]
+      },
+      {
+        icon: "ti-ship", title: "D｜併櫃處理（英騎／伊勝）", tag: "特殊廠商", tagClass: "tag-warn",
+        situation: "英騎或伊勝廠商的併櫃訂單，實際付款金額與發票金額不同，需特別處理。",
+        steps: [
+          "先與業務確認實際付款金額（通常只有稅金部分，可能還需扣除代墊出口費用）",
+          "與船務確認代墊出口費用金額"
+        ],
+        note: "英騎：至銷售發票確認出口美金金額與代收費用(台幣) → 手工新增收款單沖併櫃部份（現金科目=暫收款，匯率=未稅金額÷美金金額）→ 下推付款申請單，稅金以外金額的現金科目改為「暫收款」→ 若有代收出口費用則跑 B 流程互沖 → 最後跑 A 流程付款。\n\n伊勝：購貨發票稅額改為 0（幣別 USD 但實付台幣稅額）→ 下推營業稅購貨發票做法不變 → 手工新增「其他應付單」(伊勝-台幣稅額) → 跑 B 流程分別互沖 USD 與 NTD → 最後跑 A 流程付款。"
+      }
+    ]
+  },
+  {
+    title: "五、檢查負庫存",
+    cards: [
+      {
+        icon: "ti-minus-vertical", title: "期末數量為負的料號", tag: "前三天完成", tagClass: "tag-alert",
+        situation: "月底結帳前三天，引出物料收發彙總表，發現某些料號期末數量為負數。",
+        path: "供應鏈 → 倉存管理 → 報表分析 → 物料收發彙總表（引出資料）",
+        steps: [
+          "將期末數量為負的料號整理好，發給倉庫 Roger 與資材 Evan（需提供成品品名）",
+          "借出倉 & 料號05、06 由財務自行調整",
+          "新增其他入庫單補數量：路徑：供應鏈→倉存管理→驗收入庫→其他入庫-新增",
+          "補數量，單價填 1",
+          "審核其他入庫單",
+          "系統會自動產生成本調整單 → 將此成本調整單刪除"
+        ],
+        note: "不核算倉的負數不需在月底調整，年底時再與倉庫一起調。"
+      }
+    ]
+  }
+];
+
+function buildCard(c) {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'card-header';
+  hdr.innerHTML = `<i class="ti ${c.icon} card-icon" aria-hidden="true"></i><span class="card-title">${c.title}</span><span class="card-tag ${c.tagClass}">${c.tag}</span><span class="chevron">▾</span>`;
+
+  const body = document.createElement('div');
+  body.className = 'card-body';
+
+  let html = '';
+  if (c.situation) {
+    html += `<div class="situation"><div class="sit-label">什麼情況</div><div class="sit-text">${c.situation}</div></div>`;
+  }
+  if (c.path) {
+    html += `<div class="path"><i class="ti ti-route" style="font-size:13px;vertical-align:-1px;margin-right:4px" aria-hidden="true"></i>${c.path}</div>`;
+  }
+  if (c.steps && c.steps.length) {
+    html += `<div class="steps"><div class="step-label">怎麼做</div>`;
+    c.steps.forEach((s, i) => {
+      html += `<div class="step"><span class="step-num">${i+1}</span><span class="step-text">${s}</span></div>`;
+    });
+    html += `</div>`;
+  }
+  if (c.note) {
+    html += `<div class="note">${c.note.replace(/\n/g,'<br>')}</div>`;
+  }
+
+  body.innerHTML = html;
+
+  let open = false;
+  hdr.addEventListener('click', () => {
+    open = !open;
+    body.className = 'card-body' + (open ? ' open' : '');
+    hdr.querySelector('.chevron').className = 'chevron' + (open ? ' open' : '');
+  });
+
+  card.appendChild(hdr);
+  card.appendChild(body);
+  return card;
+}
+
+const root = document.getElementById('root');
+sections.forEach(sec => {
+  const t = document.createElement('div');
+  t.className = 'sec-title';
+  t.textContent = sec.title;
+  root.appendChild(t);
+  sec.cards.forEach(c => root.appendChild(buildCard(c)));
+});
+</script>

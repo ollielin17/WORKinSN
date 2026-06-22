@@ -1,0 +1,199 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .tree-wrap { padding: 1rem 0.5rem 2rem; }
+  .node { margin: 4px 0; user-select: none; }
+  .node-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .node-header:hover { background: var(--color-background-secondary); }
+  .toggle { font-size: 12px; color: var(--color-text-secondary); min-width: 14px; }
+  .label { font-size: 14px; color: var(--color-text-primary); font-weight: 500; flex: 1; }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    border: 0.5px solid transparent;
+  }
+  .badge-blue { background: #E6F1FB; color: #0C447C; border-color: #85B7EB; }
+  .badge-teal { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
+  .badge-amber { background: #FAEEDA; color: #633806; border-color: #EF9F27; }
+  .badge-coral { background: #FAECE7; color: #712B13; border-color: #F0997B; }
+  .badge-gray { background: #F1EFE8; color: #444441; border-color: #B4B2A9; }
+  .badge-red { background: #FCEBEB; color: #791F1F; border-color: #F09595; }
+  .badge-green { background: #EAF3DE; color: #27500A; border-color: #97C459; }
+  .children { margin-left: 24px; border-left: 1.5px solid var(--color-border-tertiary); padding-left: 12px; }
+  .detail {
+    font-size: 13px; color: var(--color-text-secondary); line-height: 1.6;
+    padding: 8px 12px; margin: 2px 0 4px;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    border-left: 3px solid var(--color-border-secondary);
+  }
+  .detail.hidden { display: none; }
+  .section-title {
+    font-size: 13px; font-weight: 500; color: var(--color-text-secondary);
+    padding: 12px 4px 4px; letter-spacing: 0.03em;
+  }
+  .root-header {
+    font-size: 15px; font-weight: 500; background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-secondary);
+  }
+</style>
+
+<h2 class="sr-only">SOP 成本1 互動式作業流程樹狀圖，可點擊展開每個步驟的詳細說明</h2>
+
+<div class="tree-wrap" id="tree"></div>
+
+<script>
+const data = [
+  {
+    id: "A", label: "庫存數量相關檢查", badge: "必做", badgeClass: "badge-blue", open: true,
+    children: [
+      {
+        id: "A1", label: "一、發票審核與勾稽", badge: "採購發票維護", badgeClass: "badge-gray",
+        detail: "路徑：供應鏈 → 採購管理 → 採購發票 → 採購發票維護\n條件：時間=本期、供貨單位=廠商名稱",
+        children: [
+          { id: "A1a", label: "確認發票抬頭、統編與金額", detail: "依業務類型分成外購入庫 / 委外加工金額，確認未稅金額與稅額是否與系統一致。同時存在外購/委外時，用外購入庫金額修改。" },
+          { id: "A1b", label: "在序時簿確認日期與申報日期", detail: "確認日期及申報日期均在當月，付款日期會依付款條件自動計算，若遇假日則順延工作日。" },
+          { id: "A1c", label: "全選→啟動審核→審核", detail: "審核後確認勾稽狀態。注意勾稽期間是否在當月；無實物退回、直出不需勾稽。" },
+          {
+            id: "A1d", label: "無法勾稽？→ 拆單重推", badge: "異常處理", badgeClass: "badge-amber",
+            detail: "原因：外購/委外加工/委外工序未完整下推購貨發票。\n處理：刪除購貨發票 → 從序時簿選擇單據點選「編輯→拆分單據」→ 輸入拆分數量保存 → 重新下推購貨發票。"
+          }
+        ]
+      },
+      {
+        id: "A2", label: "二、折讓處理", badge: "有折讓才做", badgeClass: "badge-amber",
+        children: [
+          {
+            id: "A2a", label: "無實物退回", badge: "流程A", badgeClass: "badge-teal",
+            detail: "全選下推購貨發票(專用)生成紅字發票 → 改折扣率（折3%→輸入97%；折5%→輸入95%）→ 確認金額&稅額（有尾差則調整）→ 確認申報日期 → 審核（無須勾稽）→ 紙本單據寫單號(折XXXX)。\n審核後自動產生成本調整單，需填入倉庫.倉位並審核，紙本寫單號(AMXXXX)。\n注意：若上月入庫但本月期初庫存為0，折讓產生的成本調整單可能造成庫存金額負數，需刪除該料號並分攤至其他料號。",
+          },
+          {
+            id: "A2b", label: "有實物退回", badge: "流程B", badgeClass: "badge-coral",
+            detail: "採購從外購入庫單(紅字)下推購貨發票(紅字)，確認進折類型為「實物退回」。只開折讓單，不會生成成本調整單。"
+          }
+        ]
+      },
+      {
+        id: "A3", label: "三、下推營業稅資料", badge: "每張發票都做", badgeClass: "badge-gray",
+        detail: "採購發票審核勾稽後，於序時簿下推生成「營業稅購貨發票」→ 登打發票資訊 → 確認申請日期為VAT申報月份 → 保存 → 審核 → 在發票上寫上單號。"
+      },
+      {
+        id: "A4", label: "四、應付款管理", badge: "採購付款平台", badgeClass: "badge-gray",
+        detail: "路徑：財務會計 → 應付款 → 採購對帳付款平台\n核算項目類別：供應商 → 核對金額後全選按付款 → 下推付款單",
+        children: [
+          { id: "A4a", label: "A｜一般付款", badge: "最常用", badgeClass: "badge-green", detail: "改單據日期&財務日期為預計付款日（不可假日）→ 付款行：玉山乙存 → 現金科目：銀行存款-玉山乙存 → 保存 → 啟動審核 → 審核 → 抄寫付款日期與單號至發票上。" },
+          { id: "A4b", label: "B｜應收應付互抵", detail: "先做「應付沖應收款」→ 登打廠商及客戶代碼 → 勾選要互抵的應收&應付 → 核銷 → 再跑A流程下推付款單（若金額不對代表核銷有誤，至核銷日志點選反核銷重做）。" },
+          { id: "A4c", label: "C｜預付貨款核銷", detail: "預付款已付者，等發票走完流程一後，至「付款結算」進行核銷。" },
+          { id: "A4d", label: "D｜併櫃處理（英騎/伊勝）", badge: "特殊廠商", badgeClass: "badge-amber", detail: "先與業務確認實際付款金額（通常只有稅金，需扣除代墊出口費用）。\n英騎：手工新增收款單沖併櫃部份（現金科目=暫收款），再下推付款申請單，稅金外金額修改科目為暫收款，有代收費用則跑B流程，最後跑A付款。\n伊勝：購貨發票稅額改0，手工新增其他應付單(NTD稅額)，跑B流程互沖(USD/NTD分別處理)，最後跑A付款。" }
+        ]
+      },
+      {
+        id: "A5", label: "五、檢查負庫存", badge: "前三天發給Roger/Evan", badgeClass: "badge-red",
+        detail: "路徑：供應鏈 → 倉存管理 → 報表分析 → 物料收發彙總表 → 引出資料\n期末數量為負者：\n• 通知倉庫Roger / 資材Evan（需提供成品品名）\n• 借出倉 & 料號05/06 由財務調\n• 不核算倉的負數月底不用調，年底再請倉庫一起調\n新增其他入庫單（路徑：倉存管理→驗收入庫→其他入庫-新增），補數量，單價=1，審核後刪除自動產生的成本調整單。"
+      }
+    ]
+  },
+  {
+    id: "B", label: "庫存成本相關檢查", badge: "必做", badgeClass: "badge-teal", open: true,
+    children: [
+      { id: "B1", label: "一、外購入庫", badge: "外購入庫單", badgeClass: "badge-gray", detail: "路徑：供應鏈 → 倉存管理 → 驗收入庫 → 外購入庫單-維護\n不用下條件，除不核算倉外，確認沒有「單位成本為0」或「未勾稽」的資料。\n有成本為0 → 路徑：供應鏈→存貨核算→出庫核算→核算單據查詢 → 直接修改單位成本。" },
+      { id: "B2", label: "二、採購管理", badge: "採購發票", badgeClass: "badge-gray", detail: "路徑：供應鏈 → 採購管理 → 採購發票 → 採購發票維護\n確認日期、申報日期、審核&勾稽狀態。\n注意：紅字購貨發票（無實物退回）不會勾稽。" },
+      { id: "B3", label: "三、委外加工", badge: "委外加工入庫", badgeClass: "badge-gray", detail: "路徑：供應鏈 → 委外加工 → 委外入庫 → 委外加工入庫-維護\n確認勾稽狀態。未勾稽者若加工單價為0則沒關係。月底尚未下推購貨發票的也會是未勾稽。" },
+      { id: "B4", label: "四、委外工序", badge: "條件：上個月", badgeClass: "badge-gray", detail: "路徑：生產管理 → 車間作業管理 → 委外工序轉出/接收 → 委外工序接收單-維護\n條件：接收日期=上個月\n26號以後不用看。加工單價不能為0。" },
+      { id: "B5", label: "五、其他入庫", badge: "其他入庫", badgeClass: "badge-gray", detail: "路徑：供應鏈 → 倉存管理 → 驗收入庫 → 其他入庫-維護\n確認入庫類型與用途對應：\n• 贈品 → 其他入庫成本調整\n• 負庫存 → 其他入庫成本調整（刪除自動生成的成本調整單）\n• 除不核算倉外單價不能為0 → 至核算單據查詢補單價\n• 拆卸單 → 詳 SOP成本1補充_拆卸單" },
+      { id: "B6", label: "六、其他出庫", badge: "其他出庫", badgeClass: "badge-gray", detail: "路徑：供應鏈 → 倉存管理 → 領料發貨 → 其他出庫-維護\n確認出庫類型與用途對應。\n注意：領料部門為「生產部」時須改成「組」→ 生產部的其他出庫單只能做倉庫組。" },
+      { id: "B7", label: "七、成本調整", badge: "成本調整單", badgeClass: "badge-gray", detail: "路徑：供應鏈 → 存貨核算 → 期初調整 → 成本調整單\n發票自動生成的已處理不用看。\n費用報銷的需確認：有庫存數量可審核；無庫存數量則掛費用科目，不能攤入料號。需填倉庫.倉位、調整類型（費用攤入成本）。\n查庫存數：供應鏈→倉存管理→報表分析→物料收發彙總表（引出Excel做vlookup）" },
+      {
+        id: "B8", label: "八、期末關帳", badge: "最後一步", badgeClass: "badge-red",
+        detail: "路徑：供應鏈 → 存貨核算 → 期末處理 → 期末結帳 → 查看\n執行紅框檢查，將未處理單據匯出並寄mail給相關負責人及主管請其協助處理。\n查看完後→取消\n待所有未審核完成後 → 期末關帳 → 關帳"
+      }
+    ]
+  }
+];
+
+function makeNode(n, depth) {
+  const div = document.createElement('div');
+  div.className = 'node';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'node-header' + (depth === 0 ? ' root-header' : '');
+
+  const toggle = document.createElement('span');
+  toggle.className = 'toggle';
+  const hasChildren = n.children && n.children.length > 0;
+  const hasDetail = !!n.detail;
+  toggle.textContent = hasChildren ? (n.open !== false ? '▾' : '▸') : (hasDetail ? '·' : ' ');
+
+  const lbl = document.createElement('span');
+  lbl.className = 'label';
+  lbl.textContent = n.label;
+
+  hdr.appendChild(toggle);
+  hdr.appendChild(lbl);
+
+  if (n.badge) {
+    const b = document.createElement('span');
+    b.className = 'badge ' + (n.badgeClass || 'badge-gray');
+    b.textContent = n.badge;
+    hdr.appendChild(b);
+  }
+
+  div.appendChild(hdr);
+
+  let detailEl = null;
+  if (hasDetail) {
+    detailEl = document.createElement('div');
+    detailEl.className = 'detail hidden';
+    detailEl.style.whiteSpace = 'pre-line';
+    detailEl.textContent = n.detail;
+    div.appendChild(detailEl);
+  }
+
+  let childWrap = null;
+  if (hasChildren) {
+    childWrap = document.createElement('div');
+    childWrap.className = 'children';
+    if (n.open === false) childWrap.style.display = 'none';
+    n.children.forEach(c => childWrap.appendChild(makeNode(c, depth + 1)));
+    div.appendChild(childWrap);
+  }
+
+  let detailOpen = false;
+  let childOpen = n.open !== false;
+
+  hdr.addEventListener('click', () => {
+    if (hasChildren) {
+      childOpen = !childOpen;
+      childWrap.style.display = childOpen ? '' : 'none';
+      toggle.textContent = childOpen ? '▾' : '▸';
+    } else if (hasDetail) {
+      detailOpen = !detailOpen;
+      detailEl.classList.toggle('hidden', !detailOpen);
+      toggle.textContent = detailOpen ? '▴' : '·';
+    }
+  });
+
+  return div;
+}
+
+const tree = document.getElementById('tree');
+
+const secA = document.createElement('div');
+secA.className = 'section-title';
+secA.textContent = '▌ 庫存數量相關';
+tree.appendChild(secA);
+tree.appendChild(makeNode(data[0], 0));
+
+const secB = document.createElement('div');
+secB.className = 'section-title';
+secB.style.marginTop = '12px';
+secB.textContent = '▌ 庫存成本相關';
+tree.appendChild(secB);
+tree.appendChild(makeNode(data[1], 0));
+</script>
