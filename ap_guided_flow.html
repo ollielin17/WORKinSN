@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>應付帳款作業導覽</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: #E4E2DC;
+    --text-primary: #1A1916;
+    --text-secondary: #6B6860;
+    --text-muted: #A09D96;
+    --accent-prok: #4B44C4;
+    --accent-fin: #0F7A5A;
+    --tag-op: #FAEEDA;
+    --tag-op-text: #7A4A08;
+    --tag-op-border: #F0C870;
+    --tag-doc: #E8F4FF;
+    --tag-doc-text: #1A5494;
+    --tag-doc-border: #A8CFEE;
+    --radius: 12px;
+    --radius-sm: 7px;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    color: var(--text-primary);
+  }
+
+  .header {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .progress-wrap {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 20px;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--accent-prok);
+    transition: width .4s ease;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  }
+
+  .card-step-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dept-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+    letter-spacing: .05em;
+  }
+  .dept-prok  { background: #EEEDFE; color: var(--accent-prok); }
+  .dept-fin   { background: #DFF5ED; color: var(--accent-fin); }
+  .dept-both  { background: #F3F3F3; color: #555; }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .card-desc {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .card-desc ul { padding-left: 18px; }
+  .card-desc li { margin-bottom: 4px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid;
+  }
+  .tag-op   { background: var(--tag-op);  color: var(--tag-op-text);  border-color: var(--tag-op-border); }
+  .tag-doc  { background: var(--tag-doc); color: var(--tag-doc-text); border-color: var(--tag-doc-border); }
+  .tag-icon { font-size: 12px; }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice-btn {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .1s;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .choice-btn:hover {
+    border-color: var(--accent-prok);
+    background: #FAFAFE;
+    transform: translateY(-1px);
+  }
+  .choice-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .choice-label { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .choice-sub   { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  .nav { display: flex; gap: 10px; align-items: center; }
+  .btn-back {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .btn-back:hover { border-color: #aaa; }
+  .btn-next {
+    background: var(--accent-prok);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity .15s;
+    margin-left: auto;
+  }
+  .btn-next:hover { opacity: .85; }
+  .btn-restart {
+    background: #F0EEE8;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-restart:hover { background: #E4E2DC; }
+
+  .done-icon  { font-size: 36px; margin-bottom: 12px; }
+  .done-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .done-sub   { font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; }
+
+  .trail {
+    width: 100%; max-width: 680px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 14px;
+  }
+  .trail-item {
+    font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .trail-item:not(:last-child)::after { content: '›'; margin-left: 4px; }
+  .trail-item.active { color: var(--text-primary); font-weight: 500; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">應付帳款作業導覽</div>
+  <div class="header-title">我現在要做什麼？</div>
+</div>
+
+<div class="trail" id="trail"></div>
+
+<div class="progress-wrap hidden" id="progressWrap">
+  <div class="progress-meta">
+    <span id="progressLabel">選擇情境</span>
+    <span id="progressPct">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<div id="screen"></div>
+
+<script>
+const FLOWS = {
+  '007': [
+    {
+      dept:'採購', title:'確認採購帳期類型',
+      desc:'查看採購單的帳期維護設定，決定後續操作方式。',
+      detail:'<ul><li><b>帳期1：不開發票</b>　供應商不開立預付發票</li><li><b>帳期2：應開發票</b>　供應商須附上預付發票</li></ul>',
+      ops:[], docs:['apmt500 採購單']
+    },
+    {
+      dept:'採購', title:'執行批次立帳',
+      desc:'將採購單的訂金資訊批次拋轉，生成預付憑證。',
+      detail:'可先用 <b>aapq160</b> 查詢尚未申請的預付資料。',
+      ops:['aapp134 採購預付批次立帳'], docs:['aapt310 預付憑證（系統產生）']
+    },
+    {
+      dept:'採購', title:'維護憑證並紙本簽核',
+      desc:'檢核系統生成的 aapt310 單據。',
+      detail:'<ul><li>如有發票：先維護<b>發票明細</b></li><li>印出紙本送主管簽核</li><li>憑據連同發票送交財務</li></ul>',
+      ops:['aapt310 採購預付憑證維護'], docs:['aapr300 應付帳款憑單（列印）']
+    },
+    {
+      dept:'財務', title:'財務維護科目與發票',
+      desc:'財務單位檢核請款內容，錄入發票明細及會計科目，送主管覆審。',
+      detail:'',
+      ops:['aapt310 採購預付憑證維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'主管確認，產生待抵單',
+      desc:'主管覆審後將 aapt310 單據確認，系統自動生成預付待抵單。',
+      detail:'確認後可用 <b>aapq342</b> 查詢待抵單，入庫時將在 AAP008 中沖銷。',
+      ops:['aapt310 確認'], docs:['aapq342 待抵預付單']
+    },
+    {
+      dept:'財務', title:'進入付款流程 AAP019',
+      desc:'產生傳票後，依 AAP019 應付帳款付款核銷流程完成出款。',
+      detail:'', ops:[], docs:[], done: true
+    }
+  ],
+  '008': [
+    {
+      dept:'採購', title:'確認入庫單狀態',
+      desc:'執行前確認 apmt530 入庫單為「已過帳」狀態。',
+      detail:'月底結帳前可用 <b>aapq130</b> 查詢「未立暫估及未立帳」的入庫單。',
+      ops:[], docs:['apmt530 入庫單（需已過帳）']
+    },
+    {
+      dept:'採購', title:'批次生成對帳單',
+      desc:'執行 aapp320，將供應商對帳資訊生成 aapt110 對帳單。',
+      detail:'<ul><li>匯總條件：<b>1：交易對象</b>（一個廠商一張）</li><li>對帳方式：<b>2：進貨發票立帳</b></li></ul>',
+      ops:['aapp320 入庫發票批次生成'], docs:['aapt110 廠商貨款對帳單']
+    },
+    {
+      dept:'採購', title:'核對金額，挑選待抵單',
+      desc:'採購人員核對 aapt110 金額是否與供應商發票一致。',
+      detail:'<ul><li>如有預付：在單身來源作業挑選 <b>27：其他待抵單</b></li><li>確認無誤後印出紙本，送主管簽核</li></ul>',
+      ops:['aapt110 廠商貨款對帳維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'拋轉至應付憑證',
+      desc:'採購送交財務後，執行 aapp132 將請款單拋轉至 aapt300。',
+      detail:'系統此時自動執行：<ul><li><b>沖暫估</b>（如有 AAP009 暫估單）</li><li><b>沖預付</b>（如有 AAP007 待抵單）</li></ul>',
+      ops:['aapp132 進項發票批次立帳'], docs:['aapt300 應付帳款憑證（系統產生）']
+    },
+    {
+      dept:'財務', title:'維護發票明細與分錄',
+      desc:'財務查看 aapt300 內容，登錄發票明細、維護分錄底稿，確認單據。',
+      detail:'<ul><li>多張發票時：「整單操作 → 發票與入庫項指定對應」</li><li>需含倉退單：在單身手動挑選倉退單</li></ul>',
+      ops:['aapt300 應付帳款憑證維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'生成傳票，送主管審核',
+      desc:'確認後執行批次生成傳票，主管審核通過方能進行付款。',
+      detail:'', ops:['aapp330 應付帳款單批次產生傳票'], docs:[], done: true
+    }
+  ],
+  '009': [
+    {
+      dept:'採購', title:'入庫/倉退，月底前無發票',
+      desc:'入庫單或倉退單已主管簽核並送交會計，確認系統已過帳（扣帳）。',
+      detail:'會計需在 <b>apmt570</b>（入庫）或 <b>apmt580</b>（倉退）核對主管是否完成系統確認。',
+      ops:[], docs:['入庫單 / 倉退單（已過帳）']
+    },
+    {
+      dept:'財務', title:'月底執行批次暫估',
+      desc:'每月月底執行 aapp131，批次建立暫估應付帳款。',
+      detail:'<ul><li>帳款單別：應付 / 倉退 / 費用</li><li>QBE 條件：入退庫單號碼</li></ul>',
+      ops:['aapp131 暫估應付批次立帳'], docs:['aapt320 暫估應付憑證（系統產生）']
+    },
+    {
+      dept:'財務', title:'檢核暫估單內容',
+      desc:'查看 aapt320，逐項確認以下欄位正確。',
+      detail:'<ul><li>帳款單性質：<b>01：應付暫估</b> 或 <b>02：倉退暫估</b></li><li>帳款科目需為<b>實科目</b></li><li>應付款日（影響帳齡分析）</li><li>付款到期日（影響實際付款日）</li><li>單身存貨科目需與單頭帳款科目一致</li></ul>',
+      ops:['aapt320 暫估應付憑證維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'等待發票：進入 AAP008',
+      desc:'暫估立帳完成，等取得供應商發票後，依 AAP008 流程正式立帳，系統將自動沖銷本暫估單。',
+      detail:'', ops:[], docs:[], done: true
+    }
+  ],
+  '010': [
+    {
+      dept:'採購', title:'確認倉退單狀態',
+      desc:'執行前確認倉退單於 apmt580 為「已過帳」狀態。',
+      detail:'可用 <b>aapq130</b> 查詢尚未立帳的倉退單。',
+      ops:[], docs:['apmt580 倉退單（需已過帳）']
+    },
+    {
+      dept:'採購', title:'批次生成扣抵對帳單',
+      desc:'執行 aapp320，對帳來源選「5：發票扣抵單立帳」，生成倉退對帳單。',
+      detail:'',
+      ops:['aapp320 入庫發票批次生成'], docs:['aapt110 廠商貨款對帳單（倉退）']
+    },
+    {
+      dept:'採購', title:'印出送主管簽核',
+      desc:'採購列印 aapt110 對帳單，主管確認後，採購將文件送交財務。',
+      detail:'', ops:[], docs:['aapr300 應付帳款憑單（列印）']
+    },
+    {
+      dept:'財務', title:'拋轉至應付待抵單',
+      desc:'財務執行 aapp132，將請款單拋轉至 aapt340 應付待抵單。',
+      detail:'如該入庫單有暫估資訊，系統自動沖銷暫估單。',
+      ops:['aapp132 進項發票批次立帳'], docs:['aapt340 應付待抵單（系統產生）']
+    },
+    {
+      dept:'財務', title:'維護發票與分錄，送主管覆審',
+      desc:'財務檢核 aapt340 立帳內容，錄入發票資料及分錄底稿，送主管覆審。',
+      detail:'', ops:['aapt340 應付待抵單維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'主管確認，生成傳票',
+      desc:'主管覆審無誤後確認單據，生成傳票，進入 AAP019 付款核銷流程。',
+      detail:'', ops:['aapp330 批次產生傳票'], docs:[], done: true
+    }
+  ],
+  '019': [
+    {
+      dept:'財務', title:'查詢未付款單據',
+      desc:'可先用 aapq400 查詢目前未付未沖單據，模擬付款資訊。',
+      detail:'', ops:[], docs:['aapq400 應付未付款查詢']
+    },
+    {
+      dept:'財務', title:'批次生成付款核銷單',
+      desc:'執行 aapp400，將應付未付款批次拋轉，生成 aapt420 核銷單。',
+      detail:'',
+      ops:['aapp400 請款單整批產生'], docs:['aapt420 應付核銷維護（系統產生）']
+    },
+    {
+      dept:'財務', title:'檢核款別與受款帳戶',
+      desc:'查看 aapt420 單身的「付款及差異處理」，確認款別正確。',
+      detail:'<ul><li><b>10：現金/即期</b>　手寫匯款單</li><li><b>20：銀行電匯</b>　需確認受款帳戶資訊維護完成</li><li><b>30：票據</b>　進入應付票據異動流程</li></ul>',
+      ops:['aapt420 應付核銷維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'生成總帳傳票',
+      desc:'帳務人員將確認後的核銷單生成總帳傳票。',
+      detail:'',
+      ops:['aapp420 付款沖銷單批次產生傳票', 'aglt310 轉帳傳票維護'], docs:[]
+    },
+    {
+      dept:'財務', title:'資金單位執行匯款',
+      desc:'依指定的付款方式，資金單位開立應付票或辦理銀行匯款，完成付款。',
+      detail:'', ops:[], docs:[], done: true
+    }
+  ]
+};
+
+const SCENARIO_LABEL = {
+  '007':'AAP007 採購預付請款',
+  '008':'AAP008 入庫發票立帳',
+  '009':'AAP009 暫估應付立帳',
+  '010':'AAP010 倉退折讓立帳',
+  '019':'AAP019 付款核銷'
+};
+
+let state = { phase:'select', flow:null, step:0 };
+
+function setState(patch){ Object.assign(state, patch); render(); }
+
+function render(){
+  const screen = document.getElementById('screen');
+  const trail  = document.getElementById('trail');
+  const progW  = document.getElementById('progressWrap');
+
+  if(state.phase === 'select'){
+    progW.classList.add('hidden');
+    trail.innerHTML = '';
+    screen.innerHTML = renderSelect();
+  } else {
+    progW.classList.remove('hidden');
+    renderProgress();
+    renderTrail();
+    screen.innerHTML = renderStep();
+  }
+}
+
+function renderSelect(){
+  const scenarios = [
+    { id:'007', icon:'💰', label:'採購預付請款', sub:'採購單含訂金，需先付定金給供應商' },
+    { id:'008', icon:'📄', label:'入庫發票應付立帳', sub:'收到貨物入庫並取得供應商發票，正式成立應付帳款' },
+    { id:'009', icon:'⏳', label:'暫估應付立帳', sub:'月底前尚未取得發票，先暫估認列應付與成本' },
+    { id:'010', icon:'↩️', label:'倉退折讓待抵立帳', sub:'退貨倉退，建立折讓扣抵憑證成立待抵款' },
+    { id:'019', icon:'🏦', label:'應付帳款付款核銷', sub:'已有應付傳票，準備出款核銷' },
+  ];
+  return `
+    <div class="card">
+      <div class="card-step-label">選擇情境</div>
+      <div class="card-title">目前要處理哪一種情況？</div>
+      <div class="card-desc" style="margin-bottom:0">點選符合的情境，導覽將帶你逐步完成。</div>
+    </div>
+    <div class="card" style="padding:16px">
+      <div class="choices">
+        ${scenarios.map(s=>`
+          <button class="choice-btn" onclick="startFlow('${s.id}')">
+            <span class="choice-icon">${s.icon}</span>
+            <div>
+              <div class="choice-label">${s.label}</div>
+              <div class="choice-sub">${s.sub}</div>
+            </div>
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function renderProgress(){
+  const steps = FLOWS[state.flow];
+  const total  = steps.length;
+  const current= state.step;
+  const pct    = Math.round((current / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `步驟 ${current+1} / ${total}`;
+  document.getElementById('progressPct').textContent   = pct + '%';
+}
+
+function renderTrail(){
+  const trail = document.getElementById('trail');
+  const label = SCENARIO_LABEL[state.flow] || '';
+  trail.innerHTML = `
+    <div class="trail-item">應付帳款導覽</div>
+    <div class="trail-item active">${label}</div>`;
+}
+
+function renderStep(){
+  const steps = FLOWS[state.flow];
+  const s     = steps[state.step];
+  const isLast= state.step === steps.length - 1;
+  const isFirst=state.step === 0;
+
+  if(s.done || isLast){
+    return `
+      <div class="card" style="text-align:center;padding:40px 28px">
+        <div class="done-icon">✅</div>
+        <div class="done-title">流程完成</div>
+        <div class="done-sub">${SCENARIO_LABEL[state.flow]} 的步驟已全數完成。<br>如有傳票需過帳，請依 AGL002 日常會計流程繼續處理。</div>
+        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn-restart" onclick="setState({phase:'select',flow:null,step:0})">← 回到情境選擇</button>
+          ${state.flow !== '019' ? `<button class="btn-next" onclick="startFlow('019')">繼續 → AAP019 付款核銷</button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  const deptColor = s.dept==='採購' ? 'dept-prok' : s.dept==='財務' ? 'dept-fin' : 'dept-both';
+  const opTags  = (s.ops||[]).map(o=>`<span class="tag tag-op"><span class="tag-icon">⬡</span>${o}</span>`).join('');
+  const docTags = (s.docs||[]).map(d=>`<span class="tag tag-doc"><span class="tag-icon">□</span>${d}</span>`).join('');
+  const hasTags = opTags || docTags;
+
+  return `
+    <div class="card">
+      <div class="card-step-label">
+        步驟 ${state.step+1}
+        <span class="dept-badge ${deptColor}">${s.dept}</span>
+      </div>
+      <div class="card-title">${s.title}</div>
+      <div class="card-desc">
+        ${s.desc}
+        ${s.detail ? `<div style="margin-top:8px">${s.detail}</div>` : ''}
+      </div>
+      ${hasTags ? `<div class="tags">${opTags}${docTags}</div>` : ''}
+      <div class="nav">
+        ${!isFirst ? `<button class="btn-back" onclick="setState({step:${state.step-1}})">← 上一步</button>` : ''}
+        <button class="btn-next" onclick="setState({step:${state.step+1}})">下一步 →</button>
+      </div>
+    </div>
+    <div class="card" style="padding:14px 20px;opacity:.7">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">下一步預覽</div>
+      <div style="font-size:13px;color:var(--text-secondary)">${steps[state.step+1] ? steps[state.step+1].title : '流程完成'}</div>
+    </div>`;
+}
+
+function startFlow(id){ setState({ phase:'flow', flow:id, step:0 }); }
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP SOP 互動流程查詢系統</title>
+<style>
+/* ====== Design Tokens ====== */
+:root {
+  --bg: #F0F4F8;
+  --surface: #FFFFFF;
+  --surface2: #F8FAFC;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --text: #0F172A;
+  --text-mid: #475569;
+  --text-light: #94A3B8;
+  --accent: #1E40AF;
+  --accent-light: #DBEAFE;
+  --accent-hover: #1D3461;
+
+  /* Module Colors */
+  --aap: #2563EB;
+  --aap-light: #EFF6FF;
+  --agl: #059669;
+  --agl-light: #ECFDF5;
+  --afa: #7C3AED;
+  --afa-light: #F5F3FF;
+  --anm: #DC2626;
+  --anm-light: #FEF2F2;
+  --axr: #D97706;
+  --axr-light: #FFFBEB;
+  --ais: #0891B2;
+  --ais-light: #ECFEFF;
+
+  /* Tag Colors */
+  --op-bg: #1E3A5F;
+  --op-text: #E0EDFF;
+  --batch-bg: #1A4731;
+  --batch-text: #CCFFDD;
+  --query-bg: #4A1D96;
+  --query-text: #EDE9FE;
+  --doc-bg: #7C2D12;
+  --doc-text: #FEE2E2;
+
+  /* Dept Colors */
+  --dept-purch: #1D4ED8;
+  --dept-purch-bg: #EFF6FF;
+  --dept-fin: #059669;
+  --dept-fin-bg: #F0FDF4;
+  --dept-acct: #7C3AED;
+  --dept-acct-bg: #FAF5FF;
+  --dept-other: #6B7280;
+  --dept-other-bg: #F9FAFB;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+  --transition: .2s cubic-bezier(.4,0,.2,1);
+}
+
+/* ====== Reset ====== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+a { color: inherit; text-decoration: none; }
+
+/* ====== Layout ====== */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ====== Header ====== */
+#header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 58px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+#header-logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -.3px;
+  white-space: nowrap;
+}
+#header-logo span { color: var(--text-mid); font-weight: 400; font-size: 13px; margin-left: 8px; }
+#breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-mid);
+  flex: 1;
+  overflow: hidden;
+}
+.bc-sep { color: var(--border-strong); }
+.bc-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.bc-item.active { color: var(--text); font-weight: 600; }
+.bc-item.link { color: var(--accent); cursor: pointer; }
+.bc-item.link:hover { text-decoration: underline; }
+
+#back-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+#back-btn:hover { background: #BFDBFE; }
+#back-btn.visible { display: flex; }
+
+/* ====== Main ====== */
+#main { flex: 1; padding: 28px 28px 60px; max-width: 1280px; margin: 0 auto; width: 100%; }
+
+/* ====== Screen: Module List ====== */
+#screen-modules { display: none; }
+#screen-modules.active { display: block; }
+.screen-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.screen-subtitle { font-size: 14px; color: var(--text-mid); margin-bottom: 24px; }
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+.module-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px;
+  height: 100%;
+}
+.module-card[data-mod="AAP"]::before { background: var(--aap); }
+.module-card[data-mod="AGL"]::before { background: var(--agl); }
+.module-card[data-mod="AFA"]::before { background: var(--afa); }
+.module-card[data-mod="ANM"]::before { background: var(--anm); }
+.module-card[data-mod="AXR"]::before { background: var(--axr); }
+.module-card[data-mod="AIS"]::before { background: var(--ais); }
+.module-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.module-card-header { display: flex; align-items: center; gap: 12px; }
+.module-icon { font-size: 26px; line-height: 1; }
+.module-name-wrap { flex: 1; }
+.module-name { font-size: 16px; font-weight: 700; color: var(--text); }
+.module-name-en { font-size: 11px; color: var(--text-light); font-weight: 500; margin-top: 1px; letter-spacing: .3px; }
+.module-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: .5px;
+}
+.module-card[data-mod="AAP"] .module-badge { background: var(--aap-light); color: var(--aap); }
+.module-card[data-mod="AGL"] .module-badge { background: var(--agl-light); color: var(--agl); }
+.module-card[data-mod="AFA"] .module-badge { background: var(--afa-light); color: var(--afa); }
+.module-card[data-mod="ANM"] .module-badge { background: var(--anm-light); color: var(--anm); }
+.module-card[data-mod="AXR"] .module-badge { background: var(--axr-light); color: var(--axr); }
+.module-card[data-mod="AIS"] .module-badge { background: var(--ais-light); color: var(--ais); }
+.module-desc { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+.module-flow-count { font-size: 12px; color: var(--text-light); padding-top: 4px; border-top: 1px solid var(--border); }
+.module-flow-count strong { color: var(--text-mid); }
+
+/* ====== Screen: Flow List ====== */
+#screen-flows { display: none; }
+#screen-flows.active { display: block; }
+.flow-module-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.flow-module-icon { font-size: 32px; }
+.flow-module-info h2 { font-size: 18px; font-weight: 700; }
+.flow-module-info p { font-size: 13px; color: var(--text-mid); margin-top: 3px; }
+
+.dept-filter-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dept-filter-label { font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-right: 4px; }
+.dept-filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-mid);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.dept-filter-btn.active, .dept-filter-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.flow-list { display: flex; flex-direction: column; gap: 10px; }
+.flow-item {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+}
+.flow-item:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+.flow-number {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-mid);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-family: monospace;
+  letter-spacing: .5px;
+}
+.flow-info { flex: 1; min-width: 0; }
+.flow-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.flow-name-en { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.flow-def { font-size: 12px; color: var(--text-mid); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flow-depts { display: flex; gap: 4px; flex-wrap: wrap; }
+.flow-dept-tag {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.flow-arrow { color: var(--text-light); font-size: 18px; }
+
+/* ====== Screen: Flow Steps ====== */
+#screen-steps { display: none; }
+#screen-steps.active { display: block; }
+
+.flow-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.flow-header-top { display: flex; align-items: flex-start; gap: 14px; }
+.flow-header-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-family: monospace;
+}
+.flow-header-title { flex: 1; }
+.flow-header-title h2 { font-size: 18px; font-weight: 700; }
+.flow-header-title .en { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.flow-header-def { font-size: 13px; color: var(--text-mid); margin-top: 10px; line-height: 1.6; }
+.flow-header-meta { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.meta-label { font-size: 11px; color: var(--text-light); font-weight: 600; text-transform: uppercase; }
+.dept-badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+/* Dept Filter (in step view) */
+.step-dept-filter {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-label { font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; margin-right: 4px; }
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-mid);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.filter-btn.active, .filter-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* ====== Steps Rail ====== */
+.steps-container { position: relative; }
+.step-card {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 6px;
+  position: relative;
+}
+.step-card.hidden { display: none; }
+.step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+  flex-shrink: 0;
+}
+.step-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  border: 2px solid;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.step-rail {
+  width: 2px;
+  flex: 1;
+  min-height: 16px;
+  margin-top: 4px;
+}
+.step-card:last-child .step-rail { display: none; }
+
+.step-body {
+  flex: 1;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 10px;
+}
+.step-body.handoff-card {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: var(--surface2);
+}
+
+.step-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.step-dept-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.step-handoff-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.step-action { font-size: 14px; color: var(--text); line-height: 1.65; }
+.step-note { font-size: 12px; color: var(--text-mid); margin-top: 8px; background: var(--bg); padding: 8px 10px; border-radius: var(--radius-sm); border-left: 3px solid var(--border-strong); }
+
+/* Handoff Card */
+.handoff-card-inner {
+  background: var(--surface);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 10px;
+}
+.handoff-title { font-size: 12px; font-weight: 700; color: #92400E; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.handoff-arrow { font-size: 20px; }
+.handoff-docs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.handoff-doc-tag { font-size: 12px; padding: 3px 10px; border-radius: 4px; background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; font-weight: 500; }
+
+/* Tags */
+.tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.code-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-family: 'Consolas', monospace;
+  letter-spacing: .2px;
+}
+.code-tag .tag-icon { font-size: 10px; }
+.code-tag.op { background: var(--op-bg); color: var(--op-text); }
+.code-tag.batch { background: var(--batch-bg); color: var(--batch-text); }
+.code-tag.query { background: var(--query-bg); color: var(--query-text); }
+.code-tag.doc { background: var(--doc-bg); color: var(--doc-text); }
+
+/* Tag legend */
+.tag-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-mid); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+/* Dept Color Mapping */
+.dept-採購, .dept-採購部門 { color: var(--dept-purch); background: var(--dept-purch-bg); }
+.dept-財務, .dept-財務單位 { color: var(--dept-fin); background: var(--dept-fin-bg); }
+.dept-會計, .dept-應付會計, .dept-應收會計, .dept-固資會計, .dept-資金會計, .dept-會計部門, .dept-會計\/財務部門 { color: var(--dept-acct); background: var(--dept-acct-bg); }
+.dept-default { color: var(--dept-other); background: var(--dept-other-bg); }
+
+/* Dept step num & rail */
+.step-採購 .step-num { color: var(--dept-purch); border-color: var(--dept-purch); background: var(--dept-purch-bg); }
+.step-採購 .step-rail { background: var(--dept-purch); opacity: .3; }
+.step-財務 .step-num { color: var(--dept-fin); border-color: var(--dept-fin); background: var(--dept-fin-bg); }
+.step-財務 .step-rail { background: var(--dept-fin); opacity: .3; }
+.step-會計 .step-num, .step-應付會計 .step-num, .step-應收會計 .step-num, .step-固資會計 .step-num, .step-資金會計 .step-num { color: var(--dept-acct); border-color: var(--dept-acct); background: var(--dept-acct-bg); }
+.step-會計 .step-rail, .step-應付會計 .step-rail, .step-應收會計 .step-rail, .step-固資會計 .step-rail, .step-資金會計 .step-rail { background: var(--dept-acct); opacity: .3; }
+.step-default .step-num { color: var(--dept-other); border-color: var(--border-strong); background: var(--surface2); }
+.step-default .step-rail { background: var(--border-strong); }
+
+/* Flow Complete Banner */
+.flow-complete {
+  background: #F0FDF4;
+  border: 1.5px solid #86EFAC;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.complete-icon { font-size: 24px; }
+.complete-text { font-size: 14px; font-weight: 600; color: #166534; }
+.complete-sub { font-size: 12px; color: #166534; opacity: .8; margin-top: 2px; }
+
+/* ====== Sticky Footer Actions ====== */
+.sticky-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 200;
+}
+.sticky-footer.hidden { display: none; }
+.progress-info { font-size: 13px; color: var(--text-mid); }
+.progress-info strong { color: var(--text); }
+.footer-actions { display: flex; gap: 10px; }
+.btn-home {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-mid);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.btn-home:hover { background: var(--bg); }
+.btn-primary {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--accent);
+  color: white;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+/* ====== Scrollbar ====== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Header -->
+  <div id="header">
+    <div id="header-logo">ERP SOP <span>互動流程查詢系統</span></div>
+    <div id="breadcrumb">
+      <span class="bc-item link" id="bc-home" onclick="goHome()">首頁</span>
+    </div>
+    <button id="back-btn" onclick="goBack()">← 返回</button>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main">
+    <!-- Screen 1: Module List -->
+    <div id="screen-modules" class="active">
+      <div class="screen-title">ERP 作業流程查詢系統</div>
+      <div class="screen-subtitle">選擇模組查看對應的作業流程 SOP 步驟指引</div>
+      <div class="module-grid" id="module-grid"></div>
+    </div>
+
+    <!-- Screen 2: Flow List -->
+    <div id="screen-flows">
+      <div class="flow-module-header" id="flow-module-header"></div>
+      <div class="dept-filter-bar" id="flow-dept-filter"></div>
+      <div class="flow-list" id="flow-list"></div>
+    </div>
+
+    <!-- Screen 3: Step View -->
+    <div id="screen-steps">
+      <div class="flow-header" id="step-flow-header"></div>
+      <div class="step-dept-filter" id="step-dept-filter"></div>
+      <div class="tag-legend" id="tag-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--op-bg)"></span>作業維護</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--batch-bg)"></span>批次作業</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--query-bg)"></span>查詢作業</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--doc-bg)"></span>單據文件</span>
+        <span class="legend-item">🔄 部門交接</span>
+      </div>
+      <div class="steps-container" id="steps-container"></div>
+    </div>
+  </div>
+
+  <!-- Sticky Footer (steps screen) -->
+  <div class="sticky-footer hidden" id="sticky-footer">
+    <div class="progress-info" id="progress-info"></div>
+    <div class="footer-actions">
+      <button class="btn-home" onclick="goToFlowList()">← 返回流程清單</button>
+      <button class="btn-home" onclick="goHome()">🏠 模組首頁</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== DATA ======
+const SOP_DATA = {
+  modules: [
+    {
+      id: "AAP", name: "應付帳款", nameEn: "Accounts Payable",
+      description: "採購預付、發票立帳、暫估應付、倉退折讓、付款核銷及其他應付作業",
+      icon: "💳", color: "#2563EB",
+      flows: [
+        { id:"AAP002", name:"雜項費用預付申請", nameEn:"Miscellaneous Prepayment",
+          definition:"無採購單的雜項預付款做申請及立帳，並產生預付待抵款單",
+          departments:["需求單位","應付會計"],
+          steps:[
+            { seq:1, dept:"需求單位", action:"費用申請人執行預付請款，新增 aapt310 單據，說明預付用途",
+              ops:[{type:"op",code:"aapt310",label:"採購預付憑證維護作業"}],
+              note:"維護稅種：無發票選「1:不開立發票」，有發票選「2:應開立發票」" },
+            { seq:2, dept:"需求單位", action:"將應付單印出紙本，連同外部憑證送交單位主管審核",
+              docs:[{type:"doc",code:"aapr300",label:"應付帳款憑單列印"}] },
+            { seq:3, dept:"需求單位", action:"主管同意後紙本簽名",
+              isHandoff:true, handoffTo:"應付會計", handoffDocs:["aapt310紙本","外部憑證"] },
+            { seq:4, dept:"應付會計", action:"會計人員檢核 aapt310 單據之發票資訊是否正確，維護分錄底稿，送交主管審批",
+              ops:[{type:"op",code:"aapt310",label:"採購預付憑證維護作業"}] },
+            { seq:5, dept:"應付會計", action:"主管檢核憑證及會計科目維護後確認單據" },
+            { seq:6, dept:"應付會計", action:"檢核是否已產生待抵帳款單",
+              ops:[{type:"query",code:"aapq342",label:"待抵預付款單查詢作業"}] },
+            { seq:7, dept:"應付會計", action:"拋轉總帳傳票，後續執行付款流程（AAP019）" }
+          ]
+        },
+        { id:"AAP005", name:"無業務單其他應付立帳", nameEn:"Non-PO Payable Entry",
+          definition:"無採購交易單之廠商請款，如水電費、保險費、薪資、進出口費用、稅費等其他費用請款",
+          departments:["需求單位","應付會計"],
+          steps:[
+            { seq:1, dept:"需求單位", action:"收到廠商請款單或收據、發票",
+              docs:[{type:"doc",code:"aapt301",label:"其他應付單"}] },
+            { seq:2, dept:"需求單位", action:"登錄請款內容及發票資料到 aapt301（帳款單性質：19.其他應付）；如費用已暫估，執行沖暫估；如費用已預付，執行直接沖帳",
+              ops:[{type:"op",code:"aapt301",label:"其他應付單維護作業"}] },
+            { seq:3, dept:"需求單位", action:"發起BPM電子簽核流程請主管審核；若無BPM可先走紙本簽核" },
+            { seq:4, dept:"需求單位", action:"主管審核後透過列印印出憑證，連同發票送交應付會計",
+              isHandoff:true, handoffTo:"應付會計", handoffDocs:["aapt301憑證","發票/收據"] },
+            { seq:5, dept:"應付會計", action:"檢核憑證、會計科目、核算項，維護分錄底稿後確認並拋轉總帳（AGL002）",
+              ops:[{type:"op",code:"aapt301",label:"其他應付單維護作業"}] }
+          ]
+        },
+        { id:"AAP007", name:"採購單立預付請款", nameEn:"PO Prepayment Entry",
+          definition:"採購預付申請立帳並產生預付待抵款，入庫時沖銷",
+          departments:["採購","財務"],
+          steps:[
+            { seq:1, dept:"採購", action:"確認採購單已同意且確認，多期帳款含訂金；可用 aapq160 查找尚未申請的預付採購資料",
+              ops:[{type:"op",code:"apmt500",label:"採購單維護作業"},{type:"query",code:"aapq160",label:"採購單訂金立帳查詢作業"}] },
+            { seq:2, dept:"採購", action:"執行 aapp134 批次拋轉應付單（依訂金是否開立發票操作）",
+              ops:[{type:"batch",code:"aapp134",label:"採購預付批次立帳作業"}] },
+            { seq:3, dept:"採購", action:"檢核生成的 aapt310 單號；有開立發票者需先維護發票明細；印出紙本送交主管簽核",
+              ops:[{type:"op",code:"aapt310",label:"採購預付憑證維護作業"}],
+              docs:[{type:"doc",code:"aapr300",label:"應付帳款憑單列印"}] },
+            { seq:4, dept:"採購", action:"主管審核後紙本簽核，連同憑據資料交財務部門",
+              isHandoff:true, handoffTo:"財務", handoffDocs:["aapt310紙本","預付發票","採購單"] },
+            { seq:5, dept:"財務", action:"財務單位檢核預付請款內容及憑證資訊，維護錄入發票明細及科目，送交主管覆審",
+              ops:[{type:"op",code:"aapt310",label:"採購預付憑證維護作業"}] },
+            { seq:6, dept:"財務", action:"主管覆審後將 aapt310 單據確認（系統單據審核）" },
+            { seq:7, dept:"財務", action:"確認後檢核系統生成的待抵單資訊，產生傳票執行付款流程",
+              ops:[{type:"query",code:"aapq342",label:"待抵預付單查詢作業"}] }
+          ]
+        },
+        { id:"AAP008", name:"採購入庫單發票應付立帳", nameEn:"Invoice AP Entry (Prepayment/Accrual Offset)",
+          definition:"進貨入庫後，採購執行月結整帳錄入供應商發票，並送交財務成立應付帳款；如已有預付或暫估單在此流程中沖銷",
+          departments:["採購","財務"],
+          steps:[
+            { seq:1, dept:"採購", action:"確認 apmt530 入庫單為「已過帳」狀態；可利用 aapq130 查詢未立暫估及未立帳資訊",
+              ops:[{type:"query",code:"aapq130",label:"入庫未立帳查詢作業"}] },
+            { seq:2, dept:"採購", action:"執行 aapp320 將供應商對帳資訊生成 aapt110 對帳單（對帳方式：2.進貨發票立帳）",
+              ops:[{type:"batch",code:"aapp320",label:"入庫發票批次生成作業"}] },
+            { seq:3, dept:"採購", action:"查看生成的 aapt110 單據，檢核金額是否對應供應商發票金額；如有預付待抵，在單身來源作業挑選「27:其他待抵單」" },
+            { seq:4, dept:"採購", action:"將護好的單據送主管簽核紙本，並將發票對帳資訊送交財務",
+              isHandoff:true, handoffTo:"財務", handoffDocs:["aapt110對帳單","供應商發票","入庫單apmt530"] },
+            { seq:5, dept:"財務", action:"執行 aapp132 將請款單拋轉到 aapt300 單據中處理",
+              ops:[{type:"batch",code:"aapp132",label:"進項發票批次立帳作業"}] },
+            { seq:6, dept:"財務", action:"查看 aapt300 單據：暫估資訊自動沖暫估；預付待抵同步沖帳。檢核立帳內容及發票資料，維護分錄底稿，登錄發票明細，確認單據",
+              ops:[{type:"op",code:"aapt300",label:"應付帳款憑證維護作業"}] },
+            { seq:7, dept:"財務", action:"執行應付帳款單批次產生傳票，送主管審核，審核後方能進行付款處理",
+              ops:[{type:"batch",code:"aapp330",label:"應付帳款單批次產生傳票作業"}] }
+          ]
+        },
+        { id:"AAP009", name:"入庫及倉退無發票暫估應付立帳", nameEn:"Accrual AP Entry (No Invoice)",
+          definition:"採購入庫或庫存退貨，尚未取得發票憑證者，成立暫估應付帳款並認列存貨成本",
+          departments:["需求部門","會計部門"],
+          steps:[
+            { seq:1, dept:"需求部門", action:"入庫單/廠商交貨單；倉退單/廠商確認憑證依核准權限送主管簽核" },
+            { seq:2, dept:"需求部門", action:"主管簽核後，需求部門將單據送交會計部門",
+              isHandoff:true, handoffTo:"會計部門", handoffDocs:["入庫單或倉退單","廠商交貨單或確認憑證"] },
+            { seq:3, dept:"會計部門", action:"核對需求部門主管是否做系統上確認/過帳（apmt570入庫單、apmt580採購倉退）" },
+            { seq:4, dept:"會計部門", action:"月底執行 aapp131 暫估應付批次立帳作業（帳款單別：應付/倉退/費用）",
+              ops:[{type:"batch",code:"aapp131",label:"暫估應付批次立帳作業"}] },
+            { seq:5, dept:"會計部門", action:"檢核立帳內容：aapt320 帳款單性質（01:應付暫估/02:倉退暫估）、帳款科目、應付款日、付款到期日、單身存貨科目等",
+              ops:[{type:"op",code:"aapt320",label:"暫估應付憑證維護作業"}] },
+            { seq:6, dept:"會計部門", action:"確認無誤後確認單據，拋轉傳票（AGL002）" }
+          ]
+        },
+        { id:"AAP010", name:"採購倉退折讓待抵立帳", nameEn:"Return/Allowance AP Offset Entry",
+          definition:"倉退單或折讓單開立折抵證明單成立應付款待抵帳款，並沖銷上期建立的暫估單",
+          departments:["採購","財務"],
+          steps:[
+            { seq:1, dept:"採購", action:"確認 apmt580 採購倉退維護作業中倉退單為「已過帳」狀態" },
+            { seq:2, dept:"採購", action:"執行 aapp320，生成 aapt110 對帳單（對帳來源：5.發票扣抵單立帳）",
+              ops:[{type:"batch",code:"aapp320",label:"入庫發票批次生成作業"}] },
+            { seq:3, dept:"採購", action:"查看生成的 aapt110 單據，印出送主管簽核" },
+            { seq:4, dept:"採購", action:"主管同意後，將文件送交財務作後續流程",
+              isHandoff:true, handoffTo:"財務", handoffDocs:["aapt110對帳單","倉退單憑證"] },
+            { seq:5, dept:"財務", action:"執行 aapp132 將請款單拋轉到 aapt340 待抵單中處理",
+              ops:[{type:"batch",code:"aapp132",label:"進項發票批次立帳作業"}] },
+            { seq:6, dept:"財務", action:"查看 aapt340 單據：已有暫估資訊自動沖暫估。檢核立帳內容，錄入發票資料，維護分錄底稿，送主管覆審",
+              ops:[{type:"op",code:"aapt340",label:"應付待抵單維護作業"}] },
+            { seq:7, dept:"財務", action:"主管覆審無誤，確認單據，生成傳票及後續付款處理",
+              ops:[{type:"batch",code:"aapp330",label:"應付帳款單批次產生傳票作業"}] }
+          ]
+        },
+        { id:"AAP011", name:"無業務單折讓立帳", nameEn:"Non-PO Allowance Entry",
+          definition:"非倉退類應付減項立帳，如現金折讓等其他應付扣款",
+          departments:["需求部門","應付會計"],
+          steps:[
+            { seq:1, dept:"需求部門", action:"廠商提供其他應付折讓證明，填制折讓報告申請" },
+            { seq:2, dept:"需求部門", action:"線下主管審核，通過後將憑證交給應付會計",
+              isHandoff:true, handoffTo:"應付會計", handoffDocs:["折讓證明申請單"] },
+            { seq:3, dept:"應付會計", action:"登錄扣款內容到 aapt341（帳款單性質：29.其他待底單）；單身登錄原始交易單",
+              ops:[{type:"op",code:"aapt341",label:"雜項待抵單維護作業"}] },
+            { seq:4, dept:"應付會計", action:"確認單據，拋轉傳票；於付款核銷時將帳款與待底沖銷（AAP021）" }
+          ]
+        },
+        { id:"AAP019", name:"應付帳款付款核銷", nameEn:"AP Payment & Write-off",
+          definition:"依應付請款逐筆完成核銷，並送交資金單位依時程匯款",
+          departments:["財務單位"],
+          steps:[
+            { seq:1, dept:"財務單位", action:"每日或準備付款出帳前，執行 aapp400 將應付未付款拋轉生成至 aapt420；可透過 aapq400 查詢目前未付未沖單據情況",
+              ops:[{type:"batch",code:"aapp400",label:"請款單整批產生作業"},{type:"query",code:"aapq400",label:"應付未付款查詢作業"}] },
+            { seq:2, dept:"財務單位", action:"查詢批次產生的 aapt420 付款核銷單內容：檢視「付款及差異處理」款別方式是否正確；若為20:銀行電匯款，需檢核受款帳戶資訊",
+              ops:[{type:"op",code:"aapt420",label:"應付核銷維護作業"}] },
+            { seq:3, dept:"財務單位", action:"產生分錄底稿" },
+            { seq:4, dept:"財務單位", action:"帳務人員將已確認的核銷單生成總帳傳票",
+              ops:[{type:"batch",code:"aapp420",label:"付款沖銷單批次產生傳票作業"}] },
+            { seq:5, dept:"財務單位", action:"後續資金單位依指定付款方式（10:現金即期/20:銀行電匯/30:票據）處理後續異動流程（ANM003/ANM004）" }
+          ]
+        },
+        { id:"AAP021", name:"應付帳款沖銷/應付應收對沖", nameEn:"AP Offset & AR-AP Netting",
+          definition:"應付預付帳款沖銷、應付應收帳款沖銷、預付預收帳款沖銷",
+          departments:["應付會計"],
+          steps:[
+            { seq:1, dept:"應付會計", action:"確認是否為同對象帳款沖銷；不同對象需設定「夥伴關係」才可互抵" },
+            { seq:2, dept:"應付會計", action:"執行 aapt420，在帳款明細單身根據沖帳方式錄入：A) 應付與預付對沖(40+41)；B) 應付與應收對沖(40+30)；C) 預付與預收對沖(41+31)",
+              ops:[{type:"op",code:"aapt420",label:"付款核銷單維護作業"}] },
+            { seq:3, dept:"應付會計", action:"依請款金額與實付金額檢核差異，維護差異處理" },
+            { seq:4, dept:"應付會計", action:"審核單據會計科目及核算項，產生分錄預覽，確認後拋轉總帳" }
+          ]
+        },
+        { id:"AAP026", name:"應付外幣重評價調整", nameEn:"AP Foreign Currency Revaluation",
+          definition:"期末應付外幣帳款重評價及立傳票流程",
+          departments:["應付帳務人員"],
+          steps:[
+            { seq:1, dept:"應付帳務人員", action:"設定應付帳款是否重評價，匯率取方式，重評價科目月初是否作回轉（agli171）" },
+            { seq:2, dept:"應付帳務人員", action:"每月月末維護月匯率；可執行批次作業產生月平均匯率後依企業設定調整",
+              ops:[{type:"op",code:"aooi170",label:"月匯率維護作業"}] },
+            { seq:3, dept:"應付帳務人員", action:"外幣帳款依指定匯率計算本幣現值，執行 aapp920 重評價計算",
+              ops:[{type:"batch",code:"aapp920",label:"應付帳款各期重評價計算作業"}] },
+            { seq:4, dept:"應付帳務人員", action:"確認重評價結果正確；如有誤執行 aapp960 還原，重新計算" },
+            { seq:5, dept:"應付帳務人員", action:"依重評後差異額在 aapt920 產生重評價傳票，關帳",
+              ops:[{type:"op",code:"aapt920",label:"應付帳款各期重評價維護作業"}] }
+          ]
+        },
+        { id:"AAP035", name:"零用金管理", nameEn:"Petty Cash Management",
+          definition:"公司依營運需要設置零用金。日常收支直接登錄員工費用報支作業（5000元以下）",
+          departments:["出納/財務部門"],
+          steps:[
+            { seq:1, dept:"出納/財務部門", action:"在 anmi120 建立零用金帳戶，帳戶類型設定為5:零用金存取（anmi140）" },
+            { seq:2, dept:"出納/財務部門", action:"執行 aapi350 零用金建置維護作業：設置底限及上限金額及管理人員" },
+            { seq:3, dept:"出納/財務部門", action:"建立 aapt352 零用金撥補申請單，首筆依上限申請；餘額不足時再申請",
+              ops:[{type:"op",code:"aapt352",label:"零用金撥補申請作業"}] },
+            { seq:4, dept:"出納/財務部門", action:"在 anmt310 整單操作→零用金撥補申請單處理，挑選撥補申請單號及撥款帳戶，確認後生成帳務分錄" },
+            { seq:5, dept:"出納/財務部門", action:"費用預支單/費用報銷單使用零用金支付時，在單據未確認狀態執行「整單操作/直接付款」，指定零用金帳戶後確認" }
+          ]
+        },
+        { id:"AAP017", name:"員工費用預支及報銷", nameEn:"Employee Expense Advance & Reimbursement",
+          definition:"員工費用差旅預支及報銷還款流程",
+          departments:["請款人員","財務單位"],
+          steps:[
+            { seq:1, dept:"請款人員", action:"申請借支預支，執行 aapt331 新增借支項目及用途說明",
+              ops:[{type:"op",code:"aapt331",label:"費用預支申請作業"}] },
+            { seq:2, dept:"請款人員", action:"由主管依申請單內容審核，主管審核同意及簽名" },
+            { seq:3, dept:"請款人員", action:"申請人將核准之請款單向會計單位申請預支",
+              isHandoff:true, handoffTo:"財務單位", handoffDocs:["費用預支申請紙本（已簽名）"] },
+            { seq:4, dept:"財務單位", action:"會計人員檢核單據，維護分錄底稿後確認，送交付款核銷流程；系統自動生成待抵單據作為日後報銷扣抵憑據" },
+            { seq:5, dept:"請款人員", action:"執行 aapt330 費用報銷登錄；有預支款者沖抵；未用完需繳回者，登入「繳回款明細」頁籤",
+              ops:[{type:"op",code:"aapt330",label:"費用報支單作業"}] },
+            { seq:6, dept:"請款人員", action:"繳還款者，連同報支單繳送會計單位",
+              isHandoff:true, handoffTo:"財務單位", handoffDocs:["費用報支單紙本","費用憑證","繳回款（如有）"] },
+            { seq:7, dept:"財務單位", action:"會計人員檢核費用原始憑據及繳回款項；零用金直接支付者，整單操作直接付款；維護好單據後確認及生成傳票" }
+          ]
+        },
+        { id:"AAP016", name:"費用分攤至入庫料件成本", nameEn:"Expense Allocation to Cost",
+          definition:"費用請款分攤至採購成本流程，例如進貨運輸費用、保險費用、品質扣減額等",
+          departments:["應付會計"],
+          steps:[
+            { seq:1, dept:"應付會計", action:"執行並新增 aapt430，將須攤算至產品成本的應付模組單據分攤到指定入庫單或料件品號；注意：應付單須為已確認",
+              ops:[{type:"op",code:"aapt430",label:"費用分攤維護作業"}] },
+            { seq:2, dept:"應付會計", action:"依需求目的設定分攤目的（入庫號或產品）及分式（金額比例或數量比例）" },
+            { seq:3, dept:"應付會計", action:"完成維護後，執行「整單操作→重分攤計算」，把調整後依來源總額分攤至目的產品成本" },
+            { seq:4, dept:"應付會計", action:"將分攤完成的 aapt430 單據確認，產生分攤結果至當期庫存成本，依分攤結果產生分錄傳票" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "AGL", name: "總帳", nameEn: "General Ledger",
+      description: "日常傳票、傳票分攤、應計傳票、異常調整、期末結帳及核算項管理",
+      icon: "📒", color: "#059669",
+      flows: [
+        { id:"AGL001", name:"總帳基礎數據設置", nameEn:"GL Master Data Setup",
+          definition:"設置總帳模組系統運作前的各會計參數及基礎資料",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"依集團考量，建置會計科目參照表及會計週期種類（agli100、agli010、agli020）" },
+            { seq:2, dept:"會計部門", action:"依不同帳別管理維度，設置科目管理方法及核算項管理（agli030、agli140）" },
+            { seq:3, dept:"會計部門", action:"設置自由核算項和摘要彈性取值的表結構、核算項類型維護及彈性預設（agli041、agli042、agli043）" },
+            { seq:4, dept:"會計部門", action:"設置總帳模組管理細節：傳票單別（aooi199、aooi200）、傳票摘要彈性預設（agli050、agli040、agli052）、常用摘要（agli130）" }
+          ]
+        },
+        { id:"AGL002", name:"日常會計作業", nameEn:"Daily Accounting Operation",
+          definition:"處理一般日常會計傳票編制需求，包含子模組拋轉及人工傳票",
+          departments:["會計/財務部門"],
+          steps:[
+            { seq:1, dept:"會計/財務部門", action:"由應收/應付/票據/固資/銀存管理模組之底稿數據拋轉至正式傳票；或人工於 aglt310 輸入完整傳票內容（含核算項管理設置及立沖資料）",
+              ops:[{type:"op",code:"aglt310",label:"轉帳傳票維護作業"}],
+              note:"傳票來源碼：AR=應收、AP=應付、FA=固資、NM=票據資金、FM=投資融資、XC=成本、CE=結轉、RA=迴轉" },
+            { seq:2, dept:"會計/財務部門", action:"傳票確認完成後進入紙本/電子簽核流程" },
+            { seq:3, dept:"會計/財務部門", action:"通過簽核後列印傳票憑證",
+              ops:[{type:"op",code:"aglr310",label:"傳票憑證列印"}] },
+            { seq:4, dept:"會計/財務部門", action:"執行傳票整批審核，完成後執行傳票整批過帳並歸檔",
+              ops:[{type:"batch",code:"aglp300",label:"傳票整批審核作業"},{type:"batch",code:"aglp500",label:"傳票整批過帳作業"}] }
+          ]
+        },
+        { id:"AGL003", name:"異常傳票調整作業", nameEn:"Journal Entry Correction",
+          definition:"傳票憑證經主管簽核過帳後發現錯誤，以直接轉回或直接修改方式調整異常傳票",
+          departments:["會計/財務部門"],
+          steps:[
+            { seq:1, dept:"會計/財務部門", action:"發現來源碼GL的原始傳票立帳錯誤" },
+            { seq:2, dept:"會計/財務部門", action:"若傳票已過帳，先執行傳票過帳還原作業（aglp510）；若未過帳，直接修改",
+              ops:[{type:"batch",code:"aglp510",label:"傳票過帳還原作業"}] },
+            { seq:3, dept:"會計/財務部門", action:"執行 aglt340 轉回傳票維護作業進行立帳傳票沖轉；若需重新立帳，再於 aglt310 開立",
+              ops:[{type:"op",code:"aglt340",label:"轉回傳票維護作業"}] },
+            { seq:4, dept:"會計/財務部門", action:"調整傳票附上錯誤傳票交付主管審核，通過簽核後列印、過帳並歸檔" }
+          ]
+        },
+        { id:"AGL004", name:"總帳傳票分攤", nameEn:"GL Journal Allocation",
+          definition:"每期固定產生的傳票（如管理/研發費用、折舊費用的分攤），可藉本流程建立的資料自動產生每期分攤傳票",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"依企業日常分攤狀況建立各費用分攤類別（agli120）",
+              ops:[{type:"op",code:"agli120",label:"分攤類別維護作業"}] },
+            { seq:2, dept:"會計部門", action:"依實際狀況設定每期產生的分攤資料：固定金額（aglt360）、固定比率（aglt370）或變動比率（aglt380）" },
+            { seq:3, dept:"會計部門", action:"執行 aglp550 常用及分攤傳票複製產生作業，產生當期分攤傳票；再按日常會計流程（AGL002）批次過帳即可",
+              ops:[{type:"batch",code:"aglp550",label:"常用及分攤傳票複製產生作業"}] },
+            { seq:4, dept:"會計部門", action:"注意：若分攤來源為會科餘額，需先將當月一般傳票按日常會計流程過帳取得餘額後，再執行常用傳票產生" }
+          ]
+        },
+        { id:"AGL005", name:"應計傳票作業", nameEn:"Accrual Journal Entry",
+          definition:"處理月底應計科目的傳票立帳作業，此傳票並於次月由系統自動回轉",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"企業發生應計未付項目（如應付工資、應付利息等），取得原始憑證後於月底執行 aglt350 應計傳票維護",
+              ops:[{type:"op",code:"aglt350",label:"應計傳票維護作業"}] },
+            { seq:2, dept:"會計部門", action:"列印傳票憑證（aglr310），財會主管簽審核完成" },
+            { seq:3, dept:"會計部門", action:"進入 aglp300 傳票整批審核作業執行審核，完成後執行 aglp500 傳票整批過帳作業" },
+            { seq:4, dept:"會計部門", action:"每月底執行 aglp530 期末結轉作業，系統自動產生次期期初對應的應計調整傳票（原應計傳票借貸反轉）",
+              ops:[{type:"batch",code:"aglp530",label:"期末結轉作業"}] }
+          ]
+        },
+        { id:"AGL006", name:"期末結帳作業", nameEn:"Period-End Closing",
+          definition:"會計總帳每期期末結帳流程",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"例行日常會計作業（AGL002）後，如有常用傳票分攤，先執行分攤流程（AGL004）產生未過帳之分攤傳票" },
+            { seq:2, dept:"會計部門", action:"傳票過帳前後檢核（aglq500/aglq501）：檢查借貸方金額、科目有效性、核算項、部門等是否正確",
+              ops:[{type:"query",code:"aglq500",label:"傳票過帳前檢查"},{type:"query",code:"aglq501",label:"傳票過帳後檢查"}] },
+            { seq:3, dept:"會計部門", action:"設定關帳期別（aglp580）：關帳期別以前的傳票則不可再異動僅可查詢",
+              ops:[{type:"batch",code:"aglp580",label:"關帳作業"}] },
+            { seq:4, dept:"會計部門", action:"執行 aglp530 期末結轉作業：系統自動產生當期CE傳票（本期損益），並將現行會計期別+1至次期",
+              ops:[{type:"batch",code:"aglp530",label:"期末結轉作業"}] },
+            { seq:5, dept:"會計部門", action:"查詢損益表/資產負債表確認結帳結果（aglq810、aglq820）" }
+          ]
+        },
+        { id:"AGL009", name:"核算項管理", nameEn:"Cost Center / Dimension Management",
+          definition:"企業需求在總帳以不同維度的業務信息做為財務分析數據時，啟用核算項管理達成多維度的交叉查詢或表報",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"於會計科目基本資料維護作業中選擇啟用哪些維度的核算項：固定核算項14組（含部門、據點、品牌、WBS等）；自由核算項10組（可自定義來源及管控方式）" },
+            { seq:2, dept:"會計部門", action:"核算項類型設置（agli041）；固定核算項設定（agli030）；自由核算項資料維護（agli042）；彈性預設（agli043）" },
+            { seq:3, dept:"會計部門", action:"後續依日常會計作業流程（AGL002）；傳票過帳後可查詢核算項餘額報表（aglq720、aglq730、aglq750、aglq770）" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "AFA", name: "固定資產", nameEn: "Fixed Assets",
+      description: "資產取得、部門移轉、出售、報廢、重估、盤點、月底折舊",
+      icon: "🏢", color: "#7C3AED",
+      flows: [
+        { id:"AFA003", name:"資產取得作業（列帳）", nameEn:"Asset Acquisition",
+          definition:"資產取得過程列帳",
+          departments:["固資會計"],
+          steps:[
+            { seq:1, dept:"固資會計", action:"審核欲轉固定資產的應付請款單（aapt300/aapt320/aapt301）；確認分錄科目：Dr.固定資產 Dr.進項稅額 Cr.應付帳款/應付暫估",
+              ops:[{type:"op",code:"aapt300",label:"應付帳款單維護作業"}] },
+            { seq:2, dept:"固資會計", action:"選擇欲轉成固資的應付單，賦予財產編號/資產類別/存放位置：多個數量→勾選產生財產底稿（afap200/afap210）→可分割合併；單個數量→直接產生固資卡片",
+              ops:[{type:"batch",code:"afap200",label:"固定資產底稿生成作業"}] },
+            { seq:3, dept:"固資會計", action:"檢核生成的固資卡片（afai100）內容和科目資訊，無誤後審核，使資產狀態為1.資本化" },
+            { seq:4, dept:"固資會計", action:"透過固資清冊留存（afaq151）；取得固資後依折舊參數可於本月或次月開始折舊（AFA020）" }
+          ]
+        },
+        { id:"AFA004", name:"資產部門移轉", nameEn:"Asset Department Transfer",
+          definition:"資產資訊變更：保管部門、保管人、存放地點、費用分攤部門變更",
+          departments:["轉出部門","轉入部門"],
+          steps:[
+            { seq:1, dept:"轉出部門", action:"填制資產轉移單據（afat421新增）：保管人/部門/存放位置/分攤部門變更",
+              ops:[{type:"op",code:"afat421",label:"資產變更作業"}] },
+            { seq:2, dept:"轉出部門", action:"發起BPM電子簽核流程請主管審核；審核完成單據為「已核准」",
+              isHandoff:true, handoffTo:"轉入部門", handoffDocs:["資產移轉通知"] },
+            { seq:3, dept:"轉入部門", action:"主管審核後，通知轉入部門依明細接收固定資產" },
+            { seq:4, dept:"轉入部門", action:"移轉後由接收部門將單據確認（afat421）；如有更動分錄需至 afat511 作業處理" }
+          ]
+        },
+        { id:"AFA006", name:"資產出售", nameEn:"Asset Disposal (Sale)",
+          definition:"未銷帳的資產需要出售的流程",
+          departments:["需求部門","固資會計"],
+          steps:[
+            { seq:1, dept:"需求部門", action:"內部發起紙本資產出售申請，申請完成後交給會計",
+              isHandoff:true, handoffTo:"固資會計", handoffDocs:["資產出售申請書"] },
+            { seq:2, dept:"固資會計", action:"確認折舊中的資產是否需先計提折舊（依afai021參數），若是則先折舊後再出售（AFA020）" },
+            { seq:3, dept:"固資會計", action:"根據申請填制出售單（afat504新增），產生分錄底稿：Dr.累計折舊 Dr.其他應收款 Cr.固定資產 Cr.處分固資利益 Cr.銷項稅額" },
+            { seq:4, dept:"固資會計", action:"發起BPM電子簽核流程請主管審核；單據為「已核准」後確認" },
+            { seq:5, dept:"固資會計", action:"透過整單操作〈產生帳款〉產生 axrt330 其他應收單；若需開發票，透過應收轉發票作業於 aist310 開銷項發票" },
+            { seq:6, dept:"固資會計", action:"資產出售單過帳：資產狀態更新為5.出售；生成傳票至總帳（AGL002）" }
+          ]
+        },
+        { id:"AFA007", name:"資產報廢", nameEn:"Asset Scrapping",
+          definition:"資產報廢需求流程",
+          departments:["需求部門","固資會計"],
+          steps:[
+            { seq:1, dept:"需求部門", action:"資產報廢單位提出紙本申請，通知相關人員",
+              isHandoff:true, handoffTo:"固資會計", handoffDocs:["資產報廢申請書"] },
+            { seq:2, dept:"固資會計", action:"確認折舊中的資產是否需先計提折舊（依afai021參數），若是則先折舊後再報廢（AFA020）" },
+            { seq:3, dept:"固資會計", action:"新增資產報廢異動單據（afat507），確認科目：Dr.累計折舊 Dr.處分固定資產損失 Cr.固定資產" },
+            { seq:4, dept:"固資會計", action:"發起BPM電子簽核請主管審核；「已核准」後確認單據" },
+            { seq:5, dept:"固資會計", action:"資產報廢單過帳：資產狀態更新為6.銷帳/盤虧；生成傳票至總帳（AGL002）" }
+          ]
+        },
+        { id:"AFA013", name:"資產盤點", nameEn:"Asset Inventory",
+          definition:"資產盤點流程",
+          departments:["總務部門"],
+          steps:[
+            { seq:1, dept:"總務部門", action:"執行 afap350 固定資產盤點資料生成作業，依資產中心下層組織範圍產生盤點資料" },
+            { seq:2, dept:"總務部門", action:"依盤點卡進行人工盤點，將盤點數據錄入 afat512 盤點資料維護" },
+            { seq:3, dept:"總務部門", action:"查看 afaq520 盤點差異分析表" },
+            { seq:4, dept:"總務部門", action:"盤盈：通過 afat513 資產盤盈作業建立資產資料；盤損：經會計師核准做 afat514 盤虧作業" },
+            { seq:5, dept:"總務部門", action:"依盤點結果拋轉傳票流程" }
+          ]
+        },
+        { id:"AFA020", name:"資產月底折舊作業", nameEn:"Monthly Depreciation",
+          definition:"資產自動攤提流程",
+          departments:["固資會計"],
+          steps:[
+            { seq:1, dept:"固資會計", action:"計算每月須攤提的折舊費用，執行 afap230 固定資產自動攤提作業" },
+            { seq:2, dept:"固資會計", action:"檢核產生的折舊資訊是否正確" },
+            { seq:3, dept:"固資會計", action:"透過 afat509 整單操作的【批次產生】，產生當月折舊資訊",
+              ops:[{type:"op",code:"afat509",label:"資產折舊維護作業"}] },
+            { seq:4, dept:"固資會計", action:"產生分錄底稿預覽後確認：Dr.費用-折舊 Cr.累計折舊；注意：afat509需產生分錄底稿及預覽後才可確認拋轉總帳" },
+            { seq:5, dept:"固資會計", action:"將確認單據產生傳票至總帳" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "ANM", name: "票據資金", nameEn: "Notes & Treasury",
+      description: "應付票據開立、兌現、撤票、作廢、應付匯款、客戶繳款、應收票據、期末外幣調匯",
+      icon: "🏦", color: "#DC2626",
+      flows: [
+        { id:"ANM002", name:"銀存收支帳務", nameEn:"Bank Transaction Accounting",
+          definition:"企業銀行帳戶收入及支出項目形成憑證流程，如銀行帳戶間資金調撥",
+          departments:["財務"],
+          steps:[
+            { seq:1, dept:"財務", action:"新增 anmt310 非透過應收應付作業產生之銀存收支項目（如活期存款利息收入、銀行間資金調撥），並產生收支單帳務分錄",
+              ops:[{type:"op",code:"anmt310",label:"銀存收支維護作業"}] },
+            { seq:2, dept:"財務", action:"銀存收支單及帳務單確認會計科目及核算項等資訊後，產生傳票檔" }
+          ]
+        },
+        { id:"ANM003_1", name:"應付票據開立", nameEn:"Notes Payable Issuance",
+          definition:"財務收到進項發票請款開立票據，當款別為30.票據類型時，開立支票的系統作業流程",
+          departments:["財務"],
+          steps:[
+            { seq:1, dept:"財務", action:"承接應付帳款核銷流程（AAP019），款別性質：30.票據類型；執行 anmp410 依請款單批次產生至應付票據開立作業",
+              ops:[{type:"batch",code:"anmp410",label:"應付請款單轉付款作業"}] },
+            { seq:2, dept:"財務", action:"產生的 anmt440 單據為未確認，需主管審核後才可實際開立支票；票況：0.應付票據自動產生" },
+            { seq:3, dept:"財務", action:"主管審核後確認單據（或透過 anmp441 整批確認）；票況：1.應付票據開立" },
+            { seq:4, dept:"財務", action:"開立支票：手開→anmi130設定套印不勾選，整單操作〈支票補登〉指定簿號系統自動取號；套印→anmp445支票整批列印套印",
+              ops:[{type:"op",code:"anmt440",label:"應付票據開立作業"}] },
+            { seq:5, dept:"財務", action:"開立支票後，依寄領方式透過 anmp450（寄出）或 anmp440（自領）記錄支票去向" },
+            { seq:6, dept:"財務", action:"後續將支票做異動：到期兌現→ANM003_2；票據撤回→ANM003_3；作廢重開→ANM003_4" }
+          ]
+        },
+        { id:"ANM003_2", name:"應付票據兌現", nameEn:"Notes Payable Encashment",
+          definition:"支票到期，兌現為銀行存款付出之流程",
+          departments:["財務","資金會計"],
+          steps:[
+            { seq:1, dept:"財務", action:"透過 anmq410 選擇票況=1.應付票據開立及到期日，查看預計到期的支票" },
+            { seq:2, dept:"財務", action:"至 anmt450 異動作業登錄，選擇5.應付票據兌現；單身可透過「自動產生單身」中的到期日條件整批產生",
+              ops:[{type:"op",code:"anmt450",label:"應付票據異動作業"}] },
+            { seq:3, dept:"財務", action:"核對欲兌現的支票號碼、金額後，將異動單產生分錄底稿，印出交予資金會計",
+              isHandoff:true, handoffTo:"資金會計", handoffDocs:["應付票據異動單"] },
+            { seq:4, dept:"資金會計", action:"審核帳務單內容中的科目、核算項是否正確，對單據進行確認：Dr.應付票據 Cr.銀行存款；票況=5.應付票據兌現" },
+            { seq:5, dept:"資金會計", action:"將已確認的單據拋轉總帳" }
+          ]
+        },
+        { id:"ANM003_3", name:"應付票據撤票", nameEn:"Notes Payable Recall",
+          definition:"因未兌現支票有問題，需先將支票撤回並產生應付帳款",
+          departments:["財務","資金會計"],
+          steps:[
+            { seq:1, dept:"財務", action:"透過 anmq410 查看哪一張支票要做撤票（票況=1.應付票據開立）" },
+            { seq:2, dept:"財務", action:"至 anmt450 異動作業登錄，選擇3.應付票據撤票；單身透過「自動產生單身」指定開票單號帶入",
+              ops:[{type:"op",code:"anmt450",label:"應付票據異動作業"}] },
+            { seq:3, dept:"財務", action:"核對欲撤票的支票號碼、金額，產生分錄底稿，印出交予資金會計",
+              isHandoff:true, handoffTo:"資金會計", handoffDocs:["應付票據異動單"] },
+            { seq:4, dept:"資金會計", action:"審核帳務單科目及核算項，確認單據：Dr.應付票據 Cr.應付帳款/應付費用；票況=3.應付票據撤票" },
+            { seq:5, dept:"資金會計", action:"整單操作〈票據重新立帳〉產生其他應付單（應付單別需設定不產生分錄）" },
+            { seq:6, dept:"資金會計", action:"將已確認的單據拋轉總帳" }
+          ]
+        },
+        { id:"ANM003_4", name:"應付票據作廢", nameEn:"Notes Payable Void",
+          definition:"因支票金額或內容有問題，先將支票作廢，再重開",
+          departments:["財務"],
+          steps:[
+            { seq:1, dept:"財務", action:"方法一（單筆）：以支票號碼找出對應的開票單據（anmt440），整單操作〈支票作廢〉；支票簿號、號碼被清空，票況=4.應付票據作廢" },
+            { seq:2, dept:"財務", action:"方法二（批次）：至 anmt450 登錄，選擇4.應付票據作廢；指定支票號碼帶入；注意：票據作廢單別需設定不產生分錄底稿" },
+            { seq:3, dept:"財務", action:"將作廢異動印出單據交由主管審核，審核通過後確認，支票號碼欄位被清空" },
+            { seq:4, dept:"財務", action:"回到 anmt440 逐筆將支票被作廢的開票單號重新開立支票（〈支票補登〉）" }
+          ]
+        },
+        { id:"ANM004", name:"應付匯款異動（含員工匯款）", nameEn:"Wire Transfer Payment",
+          definition:"財務單位週期依付款核銷申請資訊進行電匯作業流程",
+          departments:["財務單位"],
+          steps:[
+            { seq:1, dept:"財務單位", action:"付款沖銷作業 aapt420 使用款別性質20:銀行電匯款，先用「應付電匯款」科目核銷" },
+            { seq:2, dept:"財務單位", action:"執行 anmp410，依請款單作業之對象、幣別、款別及到期日轉至 anmt460 應付匯款開立作業；人員檢視無誤後確認單據",
+              ops:[{type:"batch",code:"anmp410",label:"應付請款單轉付款作業"}] },
+            { seq:3, dept:"財務單位", action:"若需轉出TXT電匯格式，執行 anmp480 國內匯款媒體檔轉出" },
+            { seq:4, dept:"財務單位", action:"當實際付款完成，執行 anmt480 單據，異動類別選「11:付訖」，維護交易帳戶，選擇已完成匯款的 anmt460 單號，確認",
+              ops:[{type:"op",code:"anmt480",label:"應付匯款異動維護"}] },
+            { seq:5, dept:"財務單位", action:"帳務人員執行 anmt471，整單操作→產生帳務單，確認分錄底稿後確認，拋轉總帳傳票" }
+          ]
+        },
+        { id:"ANM006", name:"客戶繳款作業（不做暫收）", nameEn:"Customer Payment Receipt",
+          definition:"企業應收帳款或預收款繳款作業流程",
+          departments:["會計"],
+          steps:[
+            { seq:1, dept:"會計", action:"持發票或應收帳款對帳單向客戶收取訂金或應收款，依款別登打 anmt540 繳款單",
+              ops:[{type:"op",code:"anmt540",label:"繳款單維護作業"}] },
+            { seq:2, dept:"會計", action:"依實際收到款項審核繳款單並確認/複核" },
+            { seq:3, dept:"會計", action:"若收到匯款，根據帳款與繳款單匹配進行核銷：Dr.銀行存款 Cr.應收帳款" },
+            { seq:4, dept:"會計", action:"若收到票據，則走應收票據收票流程（ANM007），後續進行AXR014應收票據沖應收" }
+          ]
+        },
+        { id:"ANM007", name:"應收票據收票及異動", nameEn:"Notes Receivable Receipt & Changes",
+          definition:"企業收到票據之系統作業流程",
+          departments:["業務/客人","財務"],
+          steps:[
+            { seq:1, dept:"業務/客人", action:"業務收到支票後送交出納單位",
+              isHandoff:true, handoffTo:"財務", handoffDocs:["支票"] },
+            { seq:2, dept:"財務", action:"出納登打 anmt540 繳款資料並做確認" },
+            { seq:3, dept:"財務", action:"出納確認繳款單後，由會計人員於 anmt311 整單操作產生帳務處理，確認會計科目及分錄底稿，拋轉至總帳" },
+            { seq:4, dept:"財務", action:"維護票據事務性消息：託收（anmt520選2:應收票據託收）；兌現（anmt520選8:應收票據兌現）" },
+            { seq:5, dept:"財務", action:"票據兌現：出納維護應收票據異動作業，增加銀行存款金額；會計進行帳務處理並拋轉至總帳" }
+          ]
+        },
+        { id:"ANM012", name:"期末外幣調匯並生成憑證", nameEn:"Period-End FX Revaluation (NM)",
+          definition:"銀行帳及應收票據、應付票據的期末外幣調匯",
+          departments:["會計核算單位"],
+          steps:[
+            { seq:1, dept:"會計核算單位", action:"執行 anmp810 銀行自動調匯作業；執行 anmp811 票據自動調匯作業" },
+            { seq:2, dept:"會計核算單位", action:"帳務處理：執行 anmt820 銀行調匯會計帳務作業；執行 anmt821 票據調匯會計帳務作業，處理匯兌損益" },
+            { seq:3, dept:"會計核算單位", action:"如需調匯還原，執行 anmp820 調匯還原會計帳務處理" },
+            { seq:4, dept:"會計核算單位", action:"調匯完成後透過 anmq810 調匯明細查詢作業確認結果" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "AXR", name: "應收帳款", nameEn: "Accounts Receivable",
+      description: "預收款立帳、發票立帳、暫估應收、銷退折讓、收款沖帳、壞帳準備",
+      icon: "📥", color: "#D97706",
+      flows: [
+        { id:"AXR002", name:"無訂單預收款立帳", nameEn:"Non-PO Advance Receipt",
+          definition:"日常非銷售之其他預收款立帳，如租金預收、下腳料銷售等",
+          departments:["需求單位","應收會計"],
+          steps:[
+            { seq:1, dept:"需求單位", action:"依實際收款數據，登入 aist350 交易對象及金額（對帳來源選3:訂金發票）" },
+            { seq:2, dept:"需求單位", action:"單據登打完成須交由主管審核" },
+            { seq:3, dept:"需求單位", action:"以稅別判斷是否需開發票；需開→送應收會計開立發票；不需開→印出交財務立帳",
+              isHandoff:true, handoffTo:"應收會計", handoffDocs:["aist350對帳單","發票（如有）"] },
+            { seq:4, dept:"應收會計", action:"確認憑證金額及發票金額正確，透過整單操作〈轉應收作業〉產生預收立帳單" },
+            { seq:5, dept:"應收會計", action:"檢核會科、分錄核算項，將單據確認：Dr.其他應收 Cr.銷項稅 Cr.預收帳款；確認時系統自動生成待抵帳款單" },
+            { seq:6, dept:"應收會計", action:"將已確認單據拋轉至總帳（AGL002）" }
+          ]
+        },
+        { id:"AXR003", name:"無出貨單開發票立帳", nameEn:"Non-Delivery Invoice AR Entry",
+          definition:"非出貨銷售無前端系統作業之應收帳款立帳，並開具收入發票，例如停車費收入、租金收入",
+          departments:["需求單位","應收會計"],
+          steps:[
+            { seq:1, dept:"需求單位", action:"登錄無來源作業單之帳款（axrt330）：對象可為客戶/員工/一次性交易對象；依稅別登錄是否須開銷項發票（對帳來源：2.雜項發票）" },
+            { seq:2, dept:"需求單位", action:"登打完成須交由主管審核" },
+            { seq:3, dept:"需求單位", action:"判斷是否需開發票：需開→送應收會計開立發票；不需→印出交財務立帳",
+              isHandoff:true, handoffTo:"應收會計", handoffDocs:["aist350對帳單","發票（如有）"] },
+            { seq:4, dept:"應收會計", action:"確認對帳單金額及發票金額正確，透過整單操作〈轉應收作業〉開啟 axrp132 產生其他應收立帳單" },
+            { seq:5, dept:"應收會計", action:"如客戶有預收待底，執行〈直接沖帳〉扣抵；檢核會科、分錄、核算項，確認，拋轉總帳" }
+          ]
+        },
+        { id:"AXR007", name:"出貨單開立發票立應收帳（隨貨）", nameEn:"Delivery Invoice AR Entry",
+          definition:"出貨單隨貨開立發票且自立應收單據流程",
+          departments:["倉庫","業務/會計"],
+          steps:[
+            { seq:1, dept:"倉庫", action:"每日下班前提供出貨單憑證或出貨明細表給業務；出貨單須為「已扣帳」",
+              isHandoff:true, handoffTo:"業務/會計", handoffDocs:["出貨單憑證或出貨明細表"] },
+            { seq:2, dept:"業務/會計", action:"透過 axmt540 整單操作〈出貨單批次開立作業〉產生對帳單（自動確認）；若有訂單預收，對帳時一併整帳作扣項" },
+            { seq:3, dept:"業務/會計", action:"確認對帳單及發票內容後，批次列印出，寄給客戶" },
+            { seq:4, dept:"業務/會計", action:"透過對帳單〈產生應收作業〉整批產生應收帳款單（axrp132）；對帳來源：1.出貨發票立帳" },
+            { seq:5, dept:"業務/會計", action:"批次立帳過程：如已暫估→自動沖暫估；如有預收待抵→同時產生直接沖帳" },
+            { seq:6, dept:"業務/會計", action:"確認會科、分錄、核算項並拋轉總帳：Dr.應收帳款 Dr.銷項稅 Cr.銷貨收入" }
+          ]
+        },
+        { id:"AXR008", name:"退貨單開立折讓立帳", nameEn:"Sales Return Allowance Entry",
+          definition:"銷退單開立待抵折讓證明單，後立應收待抵憑單流程",
+          departments:["倉庫","業務/會計"],
+          steps:[
+            { seq:1, dept:"倉庫", action:"收到客戶退回產品，點收、庫存扣帳，把憑證交給業務",
+              isHandoff:true, handoffTo:"業務/會計", handoffDocs:["銷退單憑證"] },
+            { seq:2, dept:"業務/會計", action:"透過 axmt600 整單操作〈銷退單產生帳款〉透過 aisp320 產生扣抵對帳單（立帳依據：2.扣抵折讓單）" },
+            { seq:3, dept:"業務/會計", action:"確認對帳單及折讓發票內容後，列印折讓證明單，寄給客戶" },
+            { seq:4, dept:"業務/會計", action:"透過扣抵對帳單〈產生應收作業〉整批產生應收待底單（axrp132）；如銷退單上期被暫估→自動沖暫估" },
+            { seq:5, dept:"業務/會計", action:"確認立帳內容，印出立帳憑證連同折讓證明交由會計部門檢核；確認會科、分錄、核算項及拋轉總帳" }
+          ]
+        },
+        { id:"AXR009", name:"出貨單未開票暫估立帳", nameEn:"Undelivered Invoice Accrual",
+          definition:"出貨單至期末尚未開立銷項發票者，批次認列收入及產生暫估應收帳款單",
+          departments:["銷售單位","應收會計"],
+          steps:[
+            { seq:1, dept:"銷售單位", action:"確認出貨單為「已扣帳」狀態；可利用 axrq130 出貨立帳匹配查詢作業，查詢「未立暫估且未對帳」的單據" },
+            { seq:2, dept:"銷售單位", action:"執行 axrp131 暫估應收批次立帳作業，將出貨單拋轉暫估立帳",
+              ops:[{type:"batch",code:"axrp131",label:"暫估應收批次立帳作業"}] },
+            { seq:3, dept:"應收會計", action:"檢核 axrt320 暫估應收憑證維護作業（01應收暫估）的會計科目，維護分錄底稿，確認單據",
+              ops:[{type:"op",code:"axrt320",label:"暫估應收憑證維護作業"}] },
+            { seq:4, dept:"應收會計", action:"執行應收單拋轉總帳傳票作業（axrp330）" }
+          ]
+        },
+        { id:"AXR014", name:"收款沖帳", nameEn:"Receipt Write-off",
+          definition:"收款後沖銷應收帳款流程",
+          departments:["應收會計"],
+          steps:[
+            { seq:1, dept:"應收會計", action:"收到業務已登錄之繳款單（ANM006），審核通過；依收款明細比對未沖銷之應收帳款單" },
+            { seq:2, dept:"應收會計", action:"執行 axrp400 收款沖帳批次產生作業，依收款對象別產生正式應收核銷單據" },
+            { seq:3, dept:"應收會計", action:"檢核產生的沖銷明細；如存在差異，在「收款及差異處理」增加行處理：收款<應收→折扣(15)或手續費(14)；收款>應收→溢收轉待抵(20)或轉應付(21)；外幣→匯兌損益" },
+            { seq:4, dept:"應收會計", action:"調整單據後，請主管審核" },
+            { seq:5, dept:"應收會計", action:"審核後將收款核銷單列印留存，然後確認並拋轉傳票",
+              ops:[{type:"op",code:"axrt400",label:"收款核銷單維護作業"}] }
+          ]
+        },
+        { id:"AXR020", name:"應收外幣重評價調整", nameEn:"AR Foreign Currency Revaluation",
+          definition:"期末應收外幣帳款重評價及立傳票流程",
+          departments:["應收帳務人員"],
+          steps:[
+            { seq:1, dept:"應收帳務人員", action:"設定應收帳款是否重評價，匯率取方式，重評價科目月初是否作回轉（agli171）" },
+            { seq:2, dept:"應收帳務人員", action:"每月月末維護月匯率（aooi170）" },
+            { seq:3, dept:"應收帳務人員", action:"執行 axrp920 應收帳款各期重評價計算作業；如有誤執行 axrp960 還原" },
+            { seq:4, dept:"應收帳務人員", action:"依重評後差異額在 axrt920 產生重評價傳票，關帳（axrp900）" }
+          ]
+        },
+        { id:"AXR021", name:"應收壞帳準備計提", nameEn:"AR Bad Debt Provision",
+          definition:"期末應收未沖銷帳款，依收款條件及帳齡區間統計分析，依比率計算壞帳準備應提列金額",
+          departments:["帳務人員"],
+          steps:[
+            { seq:1, dept:"帳務人員", action:"先執行應收模組月結流程（AXR019）" },
+            { seq:2, dept:"帳務人員", action:"設定帳齡分析區間、依對象信用等級設定比率（axri014帳齡及備抵呆帳提列設定作業）" },
+            { seq:3, dept:"帳務人員", action:"輸入分析之帳齡類型，執行 axrt940 帳齡及壞帳提列維護；系統依帳齡區間及對象信用等級依比率計提" },
+            { seq:4, dept:"帳務人員", action:"依壞帳提列率計算金額產生重評價傳票；月初不迴轉→一般轉帳傳票；次月迴轉→應計傳票（AGL005）" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "AIS", name: "發票作業", nameEn: "Invoice Management",
+      description: "發票基礎資料設置、台灣媒體申報、電子發票作業",
+      icon: "🧾", color: "#0891B2",
+      flows: [
+        { id:"AIS001", name:"發票基礎資料設置（台灣）", nameEn:"Invoice Master Data Setup (TW)",
+          definition:"發票作業前置資料建檔（台灣地區）",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"單一稅別維護（aooi610）；稅區發票相關資料設定（aisi080）；發票類型維護（aisi030）" },
+            { seq:2, dept:"會計部門", action:"台灣區每年度發票字軌設定（aisi040）；稅別對應會計科目設定（aisi070）" },
+            { seq:3, dept:"會計部門", action:"營運據點開立發票資料設定（aisi090）：維護可使用的銷項發票類型、稅務/統編、發票開立地址；若電子發票啟用=Y，需將需開立電子發票的客戶資料建立在 aisi020" },
+            { seq:4, dept:"會計部門", action:"台灣區發票簿設定作業（aisi055）：依營運據點維護各期各類型之發票簿" },
+            { seq:5, dept:"會計部門", action:"申報單位基本資料維護（aisi010）；交易對象稅務資料維護（aisi020）；完成後即可進行日常電子發票開立流程" }
+          ]
+        },
+        { id:"AIS002", name:"台灣媒體申報作業", nameEn:"Taiwan Tax Filing",
+          definition:"適用台灣媒體申報作業流程，從T100轉出媒體申報檔上傳至關貿軟體，透過關貿申報營業稅",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"申報前確認當期立帳資料皆完成；日常可透過 aisq400 查看及核對發票資訊，若有誤提早修正" },
+            { seq:2, dept:"會計部門", action:"執行 aisp420 進項發票擷取作業產生 aist412 媒體申報進項資料維護作業；可調整修改媒體申報相關資料" },
+            { seq:3, dept:"會計部門", action:"執行 aisp410 銷項發票擷取作業產生 aist411；含零稅率銷項及折讓單；空白發票可同時產生或另操作 aisp440" },
+            { seq:4, dept:"會計部門", action:"若有固資退稅申請，人工維護 aist420 固定資產退稅資料" },
+            { seq:5, dept:"會計部門", action:"執行 aisp430 進銷項媒體產生作業，產生申報文字檔（BAN.TXT、T08、T02等）；透過關貿系統上傳申報" },
+            { seq:6, dept:"會計部門", action:"執行 aist401 銷售額與稅額申報書維護作業（401申報書）" }
+          ]
+        },
+        { id:"AIS003", name:"台灣電子發票作業（財政部）", nameEn:"Taiwan e-Invoice (MOFS)",
+          definition:"適用台灣稅區並有啟用財政部平台電子發票之作業流程",
+          departments:["會計部門"],
+          steps:[
+            { seq:1, dept:"會計部門", action:"基礎資料設定（AIS001）；額外設定：社福團體愛心碼（aisi100）、載具類別（aisi110）、發票註銷理由碼（aisi130）、領取方式（aisi120）" },
+            { seq:2, dept:"會計部門", action:"日常發票開立作業（aist350）；電子發票未匯出查詢（aisq550）" },
+            { seq:3, dept:"會計部門", action:"執行 aisp520 電子發票匯出作業（財政部），申報A0101開立、A0201作廢、B0101折讓等格式；上傳至財政部平台" },
+            { seq:4, dept:"會計部門", action:"若匯出發票需修正，透過 aist360 電子發票匯出失敗調整作業進行調整" },
+            { seq:5, dept:"會計部門", action:"中獎清冊：定期從財政部下載，透過 aisp530 匯入系統；執行 aisp510 分支機構發票配號與空白發票產生" }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// ====== STATE ======
+let state = {
+  screen: 'modules',
+  moduleId: null,
+  flowId: null,
+  deptFilter: 'all'
+};
+
+// ====== HELPERS ======
+function getModule(id) { return SOP_DATA.modules.find(m => m.id === id); }
+function getFlow(moduleId, flowId) {
+  const mod = getModule(moduleId);
+  return mod ? mod.flows.find(f => f.id === flowId) : null;
+}
+function getModuleColor(id) {
+  const colors = { AAP:'#2563EB', AGL:'#059669', AFA:'#7C3AED', ANM:'#DC2626', AXR:'#D97706', AIS:'#0891B2' };
+  return colors[id] || '#475569';
+}
+function getDeptClass(dept) {
+  if (!dept) return 'dept-default';
+  const d = dept.toLowerCase();
+  if (d.includes('採購')) return 'dept-採購';
+  if (d.includes('財務')) return 'dept-財務';
+  if (d.includes('會計') || d.includes('帳務')) return 'dept-會計';
+  return 'dept-default';
+}
+function getStepClass(dept) {
+  if (!dept) return 'step-default';
+  const d = dept.toLowerCase();
+  if (d.includes('採購')) return 'step-採購';
+  if (d.includes('財務')) return 'step-財務';
+  if (d.includes('會計') || d.includes('帳務') || d.includes('固資') || d.includes('資金') || d.includes('應付') || d.includes('應收')) return 'step-應付會計';
+  return 'step-default';
+}
+function buildCodeTag(item) {
+  const icons = { op:'⚙', batch:'⚡', query:'🔍', doc:'📄' };
+  const icon = icons[item.type] || '📎';
+  return `<span class="code-tag ${item.type}" title="${item.label}"><span class="tag-icon">${icon}</span>${item.code}</span>`;
+}
+
+// ====== RENDER MODULE LIST ======
+function renderModules() {
+  state = { screen:'modules', moduleId:null, flowId:null, deptFilter:'all' };
+  document.getElementById('screen-modules').classList.add('active');
+  document.getElementById('screen-flows').classList.remove('active');
+  document.getElementById('screen-steps').classList.remove('active');
+  document.getElementById('sticky-footer').classList.add('hidden');
+  document.getElementById('back-btn').classList.remove('visible');
+  updateBreadcrumb();
+
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = SOP_DATA.modules.map(mod => `
+    <div class="module-card" data-mod="${mod.id}" onclick="selectModule('${mod.id}')">
+      <div class="module-card-header">
+        <div class="module-icon">${mod.icon}</div>
+        <div class="module-name-wrap">
+          <div class="module-name">${mod.name}</div>
+          <div class="module-name-en">${mod.nameEn}</div>
+        </div>
+        <div class="module-badge">${mod.id}</div>
+      </div>
+      <div class="module-desc">${mod.description}</div>
+      <div class="module-flow-count"><strong>${mod.flows.length}</strong> 個作業流程</div>
+    </div>
+  `).join('');
+}
+
+// ====== RENDER FLOW LIST ======
+function selectModule(moduleId) {
+  state.screen = 'flows';
+  state.moduleId = moduleId;
+  state.flowId = null;
+  state.deptFilter = 'all';
+
+  document.getElementById('screen-modules').classList.remove('active');
+  document.getElementById('screen-flows').classList.add('active');
+  document.getElementById('screen-steps').classList.remove('active');
+  document.getElementById('sticky-footer').classList.add('hidden');
+  document.getElementById('back-btn').classList.add('visible');
+  updateBreadcrumb();
+
+  const mod = getModule(moduleId);
+  const color = getModuleColor(moduleId);
+
+  // Module header
+  document.getElementById('flow-module-header').innerHTML = `
+    <div class="flow-module-icon">${mod.icon}</div>
+    <div class="flow-module-info">
+      <h2 style="color:${color}">${mod.id} — ${mod.name} <span style="font-size:13px;color:var(--text-light);font-weight:400">(${mod.nameEn})</span></h2>
+      <p>${mod.description}</p>
+    </div>
+  `;
+
+  // Collect all depts
+  const allDepts = new Set();
+  mod.flows.forEach(f => f.departments.forEach(d => allDepts.add(d)));
+
+  const filterBar = document.getElementById('flow-dept-filter');
+  filterBar.innerHTML = `<span class="dept-filter-label">部門篩選</span>
+    <button class="dept-filter-btn active" onclick="filterFlows('all',this)">全部</button>
+    ${[...allDepts].map(d => `<button class="dept-filter-btn" onclick="filterFlows('${d}',this)">${d}</button>`).join('')}
+  `;
+
+  renderFlowList(mod.flows, 'all');
+}
+
+function filterFlows(dept, btn) {
+  state.deptFilter = dept;
+  document.querySelectorAll('#flow-dept-filter .dept-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const mod = getModule(state.moduleId);
+  renderFlowList(mod.flows, dept);
+}
+
+function renderFlowList(flows, deptFilter) {
+  const color = getModuleColor(state.moduleId);
+  const filtered = deptFilter === 'all' ? flows : flows.filter(f => f.departments.includes(deptFilter));
+  document.getElementById('flow-list').innerHTML = filtered.map(flow => {
+    const deptTags = flow.departments.map(d =>
+      `<span class="flow-dept-tag ${getDeptClass(d)}">${d}</span>`
+    ).join('');
+    return `
+    <div class="flow-item" onclick="selectFlow('${state.moduleId}','${flow.id}')">
+      <div class="flow-number" style="color:${color};border-color:${color}20;background:${color}10">${flow.id}</div>
+      <div class="flow-info">
+        <div class="flow-name">${flow.name}</div>
+        <div class="flow-name-en">${flow.nameEn}</div>
+        <div class="flow-def">${flow.definition}</div>
+      </div>
+      <div class="flow-depts">${deptTags}</div>
+      <div class="flow-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+// ====== RENDER STEP VIEW ======
+function selectFlow(moduleId, flowId) {
+  state.screen = 'steps';
+  state.moduleId = moduleId;
+  state.flowId = flowId;
+  state.deptFilter = 'all';
+
+  document.getElementById('screen-modules').classList.remove('active');
+  document.getElementById('screen-flows').classList.remove('active');
+  document.getElementById('screen-steps').classList.add('active');
+  document.getElementById('sticky-footer').classList.remove('hidden');
+  document.getElementById('back-btn').classList.add('visible');
+  updateBreadcrumb();
+  renderSteps();
+}
+
+function renderSteps() {
+  const mod = getModule(state.moduleId);
+  const flow = getFlow(state.moduleId, state.flowId);
+  const color = getModuleColor(state.moduleId);
+
+  // Flow header
+  const deptBadges = flow.departments.map(d =>
+    `<span class="dept-badge ${getDeptClass(d)}">${d}</span>`
+  ).join('');
+  document.getElementById('step-flow-header').innerHTML = `
+    <div class="flow-header-top">
+      <div class="flow-header-badge" style="background:${color}15;color:${color}">${flow.id}</div>
+      <div class="flow-header-title">
+        <h2>${flow.name}</h2>
+        <div class="en">${flow.nameEn}</div>
+      </div>
+    </div>
+    <div class="flow-header-def">${flow.definition}</div>
+    <div class="flow-header-meta">
+      <span class="meta-label">涉及部門</span>
+      ${deptBadges}
+    </div>
+  `;
+
+  // Dept filter
+  const depts = [...new Set(flow.steps.map(s => s.dept))];
+  document.getElementById('step-dept-filter').innerHTML = `
+    <span class="filter-label">部門篩選</span>
+    <button class="filter-btn active" onclick="filterSteps('all',this)">全部步驟</button>
+    ${depts.map(d => `<button class="filter-btn" onclick="filterSteps('${d}',this)">${d}</button>`).join('')}
+  `;
+
+  // Steps
+  const container = document.getElementById('steps-container');
+  container.innerHTML = flow.steps.map((step, idx) => {
+    const sc = getStepClass(step.dept);
+    const dc = getDeptClass(step.dept);
+    const isLast = idx === flow.steps.length - 1;
+
+    let tagsHtml = '';
+    const allTags = [...(step.ops || []), ...(step.docs || [])];
+    if (allTags.length > 0) {
+      tagsHtml = `<div class="tags-row">${allTags.map(buildCodeTag).join('')}</div>`;
+    }
+
+    let noteHtml = step.note ? `<div class="step-note">💡 ${step.note}</div>` : '';
+
+    let handoffHtml = '';
+    if (step.isHandoff) {
+      const docs = (step.handoffDocs || []).map(d => `<span class="handoff-doc-tag">📄 ${d}</span>`).join('');
+      handoffHtml = `
+        <div class="handoff-card-inner" style="margin-top:8px;">
+          <div class="handoff-title">🔄 交接 → <strong>${step.handoffTo}</strong></div>
+          <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">移交文件：</div>
+          <div class="handoff-docs">${docs}</div>
+        </div>`;
+    }
+
+    return `
+    <div class="step-card ${sc}" data-dept="${step.dept}">
+      <div class="step-left">
+        <div class="step-num">${step.seq}</div>
+        ${!isLast ? '<div class="step-rail"></div>' : ''}
+      </div>
+      <div class="step-body${step.isHandoff ? ' handoff-card' : ''}">
+        <div class="step-header">
+          <span class="step-dept-badge ${dc}">${step.dept}</span>
+          ${step.isHandoff ? '<span class="step-handoff-tag">🔄 部門交接</span>' : ''}
+        </div>
+        <div class="step-action">${step.action}</div>
+        ${tagsHtml}
+        ${noteHtml}
+        ${handoffHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Completion banner
+  container.innerHTML += `
+    <div class="flow-complete">
+      <div class="complete-icon">✅</div>
+      <div>
+        <div class="complete-text">流程完成</div>
+        <div class="complete-sub">${flow.id} ${flow.name} — 共 ${flow.steps.length} 個步驟</div>
+      </div>
+    </div>`;
+
+  updateProgressInfo(flow.steps.length, flow.steps.length);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterSteps(dept, btn) {
+  state.deptFilter = dept;
+  document.querySelectorAll('#step-dept-filter .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const flow = getFlow(state.moduleId, state.flowId);
+  const cards = document.querySelectorAll('.step-card');
+  let visible = 0;
+  cards.forEach(card => {
+    if (dept === 'all' || card.dataset.dept === dept) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+  updateProgressInfo(visible, flow.steps.length);
+}
+
+function updateProgressInfo(shown, total) {
+  const flow = getFlow(state.moduleId, state.flowId);
+  if (!flow) return;
+  document.getElementById('progress-info').innerHTML =
+    `<strong>${flow.id} ${flow.name}</strong> &nbsp;·&nbsp; 顯示 <strong>${shown}</strong> / ${total} 個步驟`;
+}
+
+// ====== NAV ======
+function goBack() {
+  if (state.screen === 'steps') {
+    document.getElementById('screen-steps').classList.remove('active');
+    document.getElementById('screen-flows').classList.add('active');
+    document.getElementById('sticky-footer').classList.add('hidden');
+    state.screen = 'flows';
+    state.flowId = null;
+    updateBreadcrumb();
+  } else if (state.screen === 'flows') {
+    goHome();
+  }
+  window.scrollTo({ top: 0 });
+}
+
+function goHome() {
+  renderModules();
+  window.scrollTo({ top: 0 });
+}
+
+function goToFlowList() {
+  goBack();
+}
+
+function updateBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  if (state.screen === 'modules') {
+    bc.innerHTML = `<span class="bc-item active">模組選擇</span>`;
+    document.getElementById('back-btn').classList.remove('visible');
+  } else if (state.screen === 'flows') {
+    const mod = getModule(state.moduleId);
+    bc.innerHTML = `
+      <span class="bc-item link" onclick="goHome()">首頁</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-item active">${mod.id} ${mod.name}</span>`;
+  } else if (state.screen === 'steps') {
+    const mod = getModule(state.moduleId);
+    const flow = getFlow(state.moduleId, state.flowId);
+    bc.innerHTML = `
+      <span class="bc-item link" onclick="goHome()">首頁</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-item link" onclick="selectModule('${state.moduleId}')">${mod.id} ${mod.name}</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-item active">${flow.name}</span>`;
+  }
+}
+
+// ====== INIT ======
+renderModules();
+</script>
+</body>
+</html>

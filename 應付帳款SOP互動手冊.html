@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>應付帳款作業 SOP 互動手冊</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f5f5f4;
+  --color-background-tertiary:#efede8;
+  --color-text-primary:#1a1a18;
+  --color-text-secondary:#5f5e5a;
+  --color-border-tertiary:rgba(0,0,0,0.12);
+  --color-border-secondary:rgba(0,0,0,0.22);
+  --border-radius-md:8px;
+  --border-radius-lg:12px;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --color-background-primary:#1e1e1c;
+  --color-background-secondary:#2a2a28;
+  --color-background-tertiary:#141412;
+  --color-text-primary:#e8e6e0;
+  --color-text-secondary:#9c9a92;
+  --color-border-tertiary:rgba(255,255,255,0.1);
+  --color-border-secondary:rgba(255,255,255,0.18);
+}}
+body{background:var(--color-background-tertiary);font-family:var(--font-sans);min-height:100vh;display:flex;justify-content:center;padding:2rem 1rem}
+.container{width:100%;max-width:780px;background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:2rem}
+.app{font-family:var(--font-sans);max-width:720px}
+.view{display:none}.view.active{display:block}
+.top-nav{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
+.back-btn{padding:5px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px}
+.back-btn:hover{background:var(--color-background-secondary)}
+.breadcrumb{font-size:12px;color:var(--color-text-secondary)}
+.breadcrumb span{color:var(--color-text-primary)}
+.overview-title{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.overview-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem;line-height:1.5}
+.flow-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.flow-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;cursor:pointer;transition:border-color 0.15s,background 0.15s}
+.flow-card:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.fc-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:var(--border-radius-md);margin-bottom:8px;display:inline-block}
+.fc-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.fc-def{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.fc-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.fc-tag{font-size:10px;padding:1px 6px;border-radius:var(--border-radius-md)}
+.bc-p{background:#E6F1FB;color:#0C447C}.bc-f{background:#E1F5EE;color:#085041}.bc-o{background:#FAEEDA;color:#633806}
+.ft-p{background:#E6F1FB;color:#0C447C}.ft-f{background:#E1F5EE;color:#085041}
+.module-ref-btn{width:100%;padding:10px 14px;border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);font-size:13px;font-weight:500;cursor:pointer;color:var(--color-text-primary);text-align:left;display:flex;align-items:center;justify-content:space-between}
+.module-ref-btn:hover{background:var(--color-background-secondary)}
+.flow-view-header{margin-bottom:1rem}
+.fv-code{font-size:11px;font-weight:500;margin-bottom:5px}
+.fv-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.fv-def{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+.dept-tabs{display:flex;gap:6px;margin-bottom:1rem}
+.dt{padding:5px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary)}
+.dt.ap{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.dt.af{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.pbar{height:3px;background:var(--color-background-secondary);border-radius:2px;margin-bottom:1.25rem;overflow:hidden}
+.pfill{height:100%;border-radius:2px;transition:width 0.3s}
+.bp{background:#378ADD}.bf{background:#1D9E75}
+.step-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.snum{font-size:11px;font-weight:500;margin-bottom:5px}
+.snp{color:#378ADD}.snf{color:#1D9E75}
+.stitle{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.sdesc{font-size:13px;color:var(--color-text-secondary);line-height:1.65;margin-bottom:8px}
+.principle-box{background:var(--color-background-secondary);border-left:3px solid #378ADD;border-radius:0;padding:10px 12px;margin:10px 0;font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.error-box{background:#FBEAF0;border:0.5px solid #F4C0D1;border-radius:var(--border-radius-md);padding:10px 12px;margin:10px 0;font-size:12px;color:#72243E;line-height:1.6}
+.note-box{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:var(--border-radius-md);padding:10px 12px;margin:10px 0;font-size:12px;color:#633806;line-height:1.6}
+.info-box{background:#E6F1FB;border:0.5px solid #85B7EB;border-radius:var(--border-radius-md);padding:10px 12px;margin:10px 0;font-size:12px;color:#0C447C;line-height:1.6}
+.subs{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.sub{padding:8px 11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-size:12px;color:var(--color-text-primary);line-height:1.55}
+.sub b{display:block;font-size:11px;font-weight:500;margin-bottom:2px;color:#185FA5}
+.tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:2px 7px;border-radius:var(--border-radius-md)}
+.ts2{background:#E6F1FB;color:#0C447C}.td2{background:#FAEEDA;color:#633806}.ta2{background:#EAF3DE;color:#27500A}.tc2{background:#FBEAF0;color:#72243E}
+.content-tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:8px}
+.ctab{padding:4px 12px;border-radius:var(--border-radius-md);border:none;background:transparent;font-size:12px;cursor:pointer;color:var(--color-text-secondary)}
+.ctab.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500}
+.ctab-content{display:none}.ctab-content.active{display:block}
+.nav-row{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:1.25rem}
+.nb2{padding:7px 18px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:13px;font-weight:500;cursor:pointer;color:var(--color-text-primary)}
+.nb2:disabled{opacity:0.35;cursor:not-allowed}
+.nb2.pp{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.nb2.pf{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.sc2{font-size:12px;color:var(--color-text-secondary)}
+.done-wrap{text-align:center;padding:2rem 1rem}
+.done-wrap h3{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.done-wrap p{font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem}
+.rb{padding:7px 18px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;cursor:pointer;color:var(--color-text-primary)}
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mod-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px}
+.mod-code-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--border-radius-md);margin-bottom:6px;display:inline-block}
+.mod-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.mod-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.55;margin-bottom:6px}
+.mod-flows{display:flex;flex-wrap:wrap;gap:3px}
+.mod-flow-tag{font-size:10px;padding:1px 5px;border-radius:var(--border-radius-md)}
+.sec-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin:1rem 0 8px;letter-spacing:0.04em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="app">
+
+<div id="view-overview" class="view active">
+  <div class="overview-title">應付帳款作業 SOP 互動手冊</div>
+  <div class="overview-sub">財務端新進人員適用　·　點選流程卡片進入步驟詳細說明</div>
+  <div class="sec-label">作業流程</div>
+  <div class="flow-grid" id="flow-grid"></div>
+  <button class="module-ref-btn" onclick="showModuleRef()">
+    <span><i class="ti ti-database" style="margin-right:6px;font-size:14px"></i>系統模組快速查詢</span>
+    <i class="ti ti-chevron-right" style="font-size:14px;color:var(--color-text-secondary)"></i>
+  </button>
+</div>
+
+<div id="view-flow" class="view">
+  <div class="top-nav">
+    <button class="back-btn" onclick="showOverview()"><i class="ti ti-arrow-left" style="font-size:13px"></i> 返回總覽</button>
+    <div class="breadcrumb" id="breadcrumb"></div>
+  </div>
+  <div class="flow-view-header">
+    <div class="fv-code" id="fv-code"></div>
+    <div class="fv-title" id="fv-title"></div>
+    <div class="fv-def" id="fv-def"></div>
+  </div>
+  <div class="dept-tabs" id="dept-tabs"></div>
+  <div class="pbar"><div class="pfill bp" id="pfill" style="width:20%"></div></div>
+  <div id="step-content"></div>
+  <div class="nav-row">
+    <button class="nb2" id="btn-prev" onclick="navStep(-1)"><i class="ti ti-arrow-left"></i> 上一步</button>
+    <span class="sc2" id="scount"></span>
+    <button class="nb2 pp" id="btn-next" onclick="navStep(1)">下一步 <i class="ti ti-arrow-right"></i></button>
+  </div>
+</div>
+
+<div id="view-modules" class="view">
+  <div class="top-nav">
+    <button class="back-btn" onclick="showOverview()"><i class="ti ti-arrow-left" style="font-size:13px"></i> 返回總覽</button>
+    <div class="breadcrumb">系統模組快速查詢</div>
+  </div>
+  <div id="module-content"></div>
+</div>
+
+</div>
+</div>
+<script>
+const flows=[
+  {id:'AAP007A',label:'AAP007-A',title:'採購單立預付請款流程',def:'採購預付申請立帳並產生預付待抵款，入庫時沖銷。',depts:['p','f'],
+   steps:[
+    {dept:'p',num:'採購端 — 步驟 1',title:'確認採購單訂金類型',desc:'確認採購單載有「訂金」，依供應商開立發票情況選擇帳期維護類型。',principle:'帳期維護 1（不開發票）：分錄不含進項稅額，單純記預付帳款。帳期維護 2（應開發票）：分錄需加入進項稅額，此設定影響後續財務端的傳票分錄。',error:'確認類型錯誤將導致後續傳票科目錯誤，財務端付款後才發現要沖銷重來，程序繁複。',subs:[{l:'帳期維護 1：不開立發票',d:'供應商不開立預付發票，無進項稅額。'},{l:'帳期維護 2：應開立發票',d:'供應商必須開立預付發票，可認列進項稅額。'}],tags:[{t:'採購單',c:'td2'},{t:'訂金確認',c:'ta2'}],note:'可至 aapq160 查找尚未申請的預付採購資料。',nt:'n'},
+    {dept:'p',num:'採購端 — 步驟 2',title:'執行 aapp134 拋轉應付單',desc:'確認採購單已同意及確認後，執行 aapp134，自動將訂金資訊轉換成 aapt310 應付單。',principle:'aapp134 是採購模組與財務模組之間的橋梁程式。採購單記的是「買什麼、多少錢」，財務模組需要「付誰、科目是什麼」，兩種語言不同，需要拋轉轉換。',error:null,subs:null,tags:[{t:'aapp134',c:'ts2'},{t:'拋轉應付單',c:'ta2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 3',title:'檢核 aapt310 並印出紙本',desc:'檢視系統生成的 aapt310 單號，確認金額、廠商、科目等資訊正確無誤後，印出紙本送主管審核。',principle:'系統自動帶入資料時不會自己發現錯誤，需要人工把關。aapt310 是後續付款的依據，這裡的錯誤若未發現，付款後要更正非常麻煩。',error:'常見錯誤：不仔細核對就送審。主管簽完、財務付款後才發現金額或科目有誤，需沖銷重來。',subs:null,tags:[{t:'aapt310',c:'ts2'},{t:'紙本列印',c:'td2'},{t:'資訊核對',c:'tc2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 4',title:'主管簽核並移交會計',desc:'主管於紙本簽核後，連同採購單影本及廠商憑據，一併交付會計部門檢核及請款。',principle:'職能分工原則：採購端核對業務面（金額、廠商），財務端核對帳務面（科目、分錄）。同一人不得同時執行兩項，這是稽核的基本要求。',error:null,subs:null,tags:[{t:'主管簽核',c:'tc2'},{t:'移交會計',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 5',title:'會計單位檢核並維護科目',desc:'會計單位獨立核對預付請款內容及憑證資訊，確認或修正科目後，送交主管覆審。',principle:'為什麼要再核對一次？採購端核對業務面，財務端核對帳務面。雙重核對是內部控制要求。科目維護是財務端最重要的工作，系統預設值不一定符合實際情況。',error:'常見錯誤：直接沿用系統預設科目而不確認。不同廠商類型、採購類別可能有不同科目，務必人工確認。',subs:null,tags:[{t:'憑證核對',c:'tc2'},{t:'科目維護',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 6',title:'主管覆審並確認 aapt310',desc:'財務主管覆審後，在系統上執行「確認」動作，aapt310 狀態鎖定，系統自動產生預付待抵單。',principle:'系統「確認」後觸發兩件事：① aapt310 鎖定不可修改 ② 自動產生待抵單。待抵單的用途：記錄這筆錢已付出，等入庫時拿來沖銷，避免重複付款。',error:null,subs:null,tags:[{t:'aapt310',c:'ts2'},{t:'主管確認',c:'tc2'}],note:'確認後系統自動產生待抵單，是後續沖銷的依據。',nt:'i'},
+    {dept:'f',num:'財務端 — 步驟 7',title:'檢核待抵單資訊',desc:'核對系統自動產生的待抵單：金額、供應商、幣別須與 aapt310 一致，狀態應為「未沖」。',principle:'待抵單是系統的「記憶」，記錄這筆貨已付過訂金。若資料有誤，入庫時系統無法正確沖銷，可能造成重複付款。現在核對比事後修正容易得多。',error:'實務常見：待抵金額只帶未稅金額（稅額漏掉）、幣別帶錯（台幣採購跑成美金）、對應到錯誤廠商。不要以為系統自動產生就沒問題。',subs:null,tags:[{t:'待抵單',c:'ts2'},{t:'資訊核對',c:'tc2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 8',title:'產生傳票並執行付款流程',desc:'待抵單確認無誤後，產生正式傳票，送主管審核，通過後執行實際付款。',principle:'帳期維護 1 分錄：借預付帳款 / 貸銀行存款。帳期維護 2 分錄：借預付帳款 + 進項稅額 / 貸銀行存款。付款後預付帳款仍掛帳，等入庫後沖銷換成存貨才完成循環。',error:null,subs:null,tags:[{t:'傳票產生',c:'ta2'},{t:'付款流程',c:'ta2'}],note:null}
+   ]},
+  {id:'AAP007B',label:'AAP007-B',title:'採購月結整帳及應付立帳',def:'進貨入庫後月結整帳，錄入供應商發票，成立應付帳款，沖銷預付或暫估。',depts:['p','f'],
+   steps:[
+    {dept:'p',num:'採購端 — 步驟 1',title:'確認入庫單狀態為「已過帳」',desc:'確認 apmt530 入庫單狀態為「已過帳」，方可進行後續月結整帳作業。',principle:'「已過帳」代表存貨已正式入帳，數量已更新。若入庫單未過帳就進行應付立帳，會造成「存貨未入帳，應付帳款已出現」，資產負債表失真。',error:null,subs:null,tags:[{t:'apmt530',c:'ts2'},{t:'入庫確認',c:'tc2'}],note:'可用 aapq130 查詢「未立暫估及未立帳」資訊，月底結帳前須完成所有單據。',nt:'n'},
+    {dept:'p',num:'採購端 — 步驟 2',title:'執行 aapp320 生成對帳單 aapt110',desc:'執行 aapp320 生成 aapt110 對帳單，匯總條件選「1：交易對象」，對帳方式選「2：進貨發票立帳」。',principle:'匯總條件「1：交易對象」讓同一廠商的多筆入庫合併成一張對帳單，對帳較簡潔。對帳方式「2：進貨發票立帳」代表要登錄廠商發票，正式成立應付帳款。',error:null,subs:[{l:'匯總條件',d:'選「1：交易對象」，同一廠商本月所有入庫合併一張對帳單。'},{l:'對帳方式',d:'選「2：進貨發票立帳」，並依需求設定 QBE 條件篩選。'}],tags:[{t:'aapp320',c:'ts2'},{t:'aapt110',c:'ts2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 3',title:'查看 aapt110 並核對發票金額',desc:'採購人員拿著廠商發票，核對 aapt110 上的金額是否一致，確認無誤後登錄發票明細。',principle:'aapt110 金額來自入庫單（系統自動帶入），廠商發票是廠商自己開的，兩邊來源不同，可能有差異。差異原因：廠商開錯金額、單價不符採購單、數量有出入。',error:'發現不一致時：需與廠商對帳確認，釐清哪邊有誤，才能繼續下一步。不能直接沿用系統金額。',subs:[{l:'退倉單併入',d:'如需將退倉單併入同一對帳單，手動在單身挑選倉退單。'},{l:'多張發票處理',d:'用「整單操作：發票與明細入庫項指定對應」進行發票一對一項次入庫。'}],tags:[{t:'aapt110',c:'ts2'},{t:'發票核對',c:'tc2'},{t:'登錄明細',c:'ta2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 4',title:'挑選待抵單並送主管審核',desc:'如採購單已有預付待抵，在單身來源作業挑選「27：其他待抵單」及對應待抵單單號，完成後送主管審核。',principle:'系統需要知道「這批貨的貨款裡有一部分已先付過」，才能在成立應付帳款時正確扣除，不重複請款。',error:null,subs:null,tags:[{t:'待抵單挑選',c:'ta2'},{t:'送審',c:'tc2'}],note:'若無預付待抵資訊，此步驟可略過，直接送主管審核。',nt:'n'},
+    {dept:'p',num:'採購端 — 步驟 5',title:'主管審核並確認單據',desc:'主管確認入庫數量與發票一致、金額正確後，在系統執行「確認」，採購端流程完成。',principle:null,error:null,subs:null,tags:[{t:'主管確認',c:'tc2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 6',title:'執行 aapp132 拋轉至 aapt300',desc:'執行 aapp132，將 aapt110 對帳單拋轉到 aapt300 應付帳款單，採購經手人同步送交實體發票。',principle:'財務端需要實體發票進行獨立核對。電子系統的資料是採購人員登錄的，財務端必須看原始憑證確認，這是稽核的基本要求。',error:null,subs:null,tags:[{t:'aapp132',c:'ts2'},{t:'aapt300',c:'ts2'},{t:'拋轉請款單',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 7',title:'查看 aapt300 並確認立帳及沖銷',desc:'開啟 aapt300，系統自動沖暫估及預付待抵，財務端核對立帳內容、維護分錄底稿後執行確認。',principle:'有預付待抵時：應付 100,000 – 預付待抵 30,000 = 實際應付 70,000。暫估沖銷不影響金額，只改變狀態（暫估→正式應付）。',error:'常見錯誤：未仔細核對分錄底稿就確認。確認後單據鎖定，修改需沖銷重來，影響帳期。',subs:[{l:'自動沖暫估',d:'若入庫單已有暫估應付（AAP009），系統自動以正式應付取代。'},{l:'自動沖預付待抵',d:'若採購端步驟4有挑選待抵單，系統自動從應付金額扣除。'}],tags:[{t:'aapt300',c:'ts2'},{t:'立帳核對',c:'tc2'},{t:'分錄底稿維護',c:'ta2'}],note:'確認無誤後方可執行單據確認，確認後內容鎖定。',nt:'i'},
+    {dept:'f',num:'財務端 — 步驟 8',title:'生成傳票並送主管審核後付款',desc:'確認 aapt300 後產生傳票，送主管審核，通過後進入 AAP019 付款流程。',principle:'有預付待抵分錄：借應付帳款 100,000 / 貸預付帳款 30,000 + 銀行存款 70,000。有暫估沖銷分錄：借暫估應付 100,000 / 貸應付帳款 100,000。',error:null,subs:null,tags:[{t:'傳票生成',c:'ta2'},{t:'主管審核',c:'tc2'},{t:'付款處理',c:'ta2'}],note:null}
+   ]},
+  {id:'AAP008',label:'AAP008',title:'採購入庫單發票應付立帳流程',def:'一般正常進貨的月結立帳，無預付訂金，直接成立應付帳款。',depts:['p','f'],
+   steps:[
+    {dept:'p',num:'採購端 — 步驟 1',title:'確認入庫單狀態為「已過帳」',desc:'確認 apmt530 入庫單狀態為「已過帳」。',principle:'已過帳代表存貨正式入帳，才能進行應付立帳，否則帳實不符。',error:null,subs:null,tags:[{t:'apmt530',c:'ts2'},{t:'入庫確認',c:'tc2'}],note:'可用 aapq130 查詢未立帳清單，月底前全部處理完。',nt:'n'},
+    {dept:'p',num:'採購端 — 步驟 2',title:'執行 aapp320 生成對帳單 aapt110',desc:'執行 aapp320，匯總條件選「1：交易對象」，對帳方式選「2：進貨發票立帳」。',principle:'aapp320 將入庫資訊彙整，依設定條件產生 aapt110 對帳單。',error:null,subs:[{l:'匯總條件',d:'選「1：交易對象」，同一廠商本月入庫合併一張。'},{l:'對帳方式',d:'選「2：進貨發票立帳」，依需求設定 QBE 條件。'}],tags:[{t:'aapp320',c:'ts2'},{t:'aapt110',c:'ts2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 3',title:'查看 aapt110 並核對發票金額',desc:'採購人員核對 aapt110 與廠商發票金額是否一致，確認後登錄發票明細。如有退倉單手動在單身挑選。',principle:'aapt110 金額來自入庫單，廠商發票是廠商開的，兩邊來源不同，需逐一核對確認一致。',error:'發票號碼輸入錯誤會導致進項稅額申報出問題，務必對照實體發票逐字確認。',subs:null,tags:[{t:'aapt110',c:'ts2'},{t:'發票核對',c:'tc2'},{t:'登錄明細',c:'ta2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 4',title:'挑選待抵單並送主管審核',desc:'如有預付待抵，在單身來源作業挑選「27：其他待抵單」。無預付則直接送主管審核。',principle:'AAP008 大部分情況無預付訂金，此步驟通常直接跳過送審。若特殊情況有訂金，才需要挑選待抵單。',error:null,subs:null,tags:[{t:'待抵單挑選',c:'ta2'},{t:'送審',c:'tc2'}],note:'若無預付待抵，此步驟直接略過。',nt:'n'},
+    {dept:'p',num:'採購端 — 步驟 5',title:'主管審核並確認單據',desc:'主管核對無誤後執行確認，採購端完成，移交財務端。',principle:null,error:null,subs:null,tags:[{t:'主管確認',c:'tc2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 6',title:'執行 aapp132 拋轉至 aapt300',desc:'執行 aapp132 將 aapt110 拋轉至 aapt300，採購經手人同步送交實體發票。',principle:'財務端需要原始憑證進行獨立核對，不能只看系統資料。',error:null,subs:null,tags:[{t:'aapp132',c:'ts2'},{t:'aapt300',c:'ts2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 7',title:'查看 aapt300 並確認立帳',desc:'AAP008 最常見情況（無暫估、無預付）：直接成立正式應付帳款，金額等於發票全額。若有暫估，系統自動沖銷。核對後維護分錄底稿並確認。',principle:'最常見分錄：借存貨/進貨成本 + 進項稅額 / 貸應付帳款。若有暫估：借暫估應付 / 貸應付帳款（金額不變，狀態從暫估變正式）。',error:'常見錯誤：未確認暫估是否正確沖銷。同一批貨若暫估未沖銷，會造成應付帳款重複計算。',subs:null,tags:[{t:'aapt300',c:'ts2'},{t:'立帳核對',c:'tc2'},{t:'分錄底稿維護',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 8',title:'生成傳票並送主管審核後付款',desc:'確認後產生傳票，送主管審核，通過後進入 AAP019 付款流程。',principle:null,error:null,subs:null,tags:[{t:'傳票生成',c:'ta2'},{t:'主管審核',c:'tc2'}],note:null}
+   ]},
+  {id:'AAP009',label:'AAP009',title:'入庫及倉退無發票暫估應付立帳',def:'月底貨到但發票未到，先建立暫估應付帳款，認列存貨成本。',depts:['f'],
+   steps:[
+    {dept:'f',num:'財務端 — 步驟 1',title:'憑證送主管簽核',desc:'入庫單+廠商交貨單；倉退單+廠商確認憑證，依核准權限送主管簽核。',principle:'暫估是在無發票情況下入帳，風險較高（金額是估的）。需主管授權確認這筆暫估合理，才能入帳。',error:null,subs:null,tags:[{t:'入庫單',c:'td2'},{t:'廠商交貨單',c:'td2'},{t:'主管簽核',c:'tc2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 2',title:'核對系統確認及過帳狀態',desc:'至 apmt570 核對入庫單是否已確認/過帳；至 apmt580 核對倉退單是否已確認/過帳（扣帳）。',principle:'若入庫單未過帳，存貨未入帳，此時建立暫估應付帳款，帳就對不起來：存貨未進來，應付帳款卻已出現，資產負債表失真。',error:'常見錯誤：未確認過帳狀態就直接執行 aapp131，可能造成帳實不符。',subs:null,tags:[{t:'apmt570',c:'ts2'},{t:'apmt580',c:'ts2'},{t:'核對過帳',c:'tc2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 3',title:'月底執行 aapp131 批次暫估立帳',desc:'每月月底執行 aapp131，批次掃描所有已過帳但尚未取得發票的入退庫單，自動產生暫估應付帳款。',principle:'批次作業優點：月底可能有數十甚至數百張入庫單需暫估，批次作業一次處理完，大幅提升效率。QBE 條件務必填寫，避免帶入其他月份或已處理的單據。',error:'QBE 條件未設定：可能將不該暫估的單據一起帶入，造成重複暫估。',subs:[{l:'帳款單別：應付',d:'一般入庫情況'},{l:'帳款單別：倉退',d:'退貨給廠商情況'},{l:'帳款單別：費用',d:'費用類入庫情況'},{l:'QBE 條件',d:'輸入入退庫單號碼，篩選本次要暫估的單據範圍。'}],tags:[{t:'aapp131',c:'ts2'},{t:'批次立帳',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 4',title:'檢核 aapt320 五大項目',desc:'於 aapt320 逐項檢核帳款單性質、帳款類別、帳款科目（需為實科目）、應付款日/付款到期日、單身科目一致性。',principle:'帳款單性質錯誤→後續沖銷時系統無法對應。帳款科目非實科目→過帳時報錯。應付款日→影響帳齡分析。付款到期日→影響實際付款時程。單身科目需與單頭一致，不一致分錄會有問題。',error:'常見錯誤：直接確認而未逐項核對。暫估金額是估的，科目或日期錯誤會影響後續帳齡分析及付款時程。',subs:[{l:'(1) 帳款單性質',d:'入庫→「01：應付暫估」；倉退→「02：倉退暫估」'},{l:'(2) 帳款類別',d:'確認原料、商品、費用等分類正確'},{l:'(3) 帳款科目',d:'必須為實科目，不能使用彙總科目'},{l:'(4) 應付款日 / 付款到期日',d:'應付款日影響帳齡分析；付款到期日影響實際付款日'},{l:'(5) 單身科目一致性',d:'單身帳款科目需與單頭帳款科目完全一致'}],tags:[{t:'aapt320',c:'ts2'},{t:'五大核對項目',c:'tc2'}],note:'下個月發票到了，執行 AAP008 正式立帳，系統自動沖銷本次暫估，換成正式應付帳款。',nt:'n'}
+   ]},
+  {id:'AAP010',label:'AAP010',title:'倉退單開立折讓應付待抵流程',def:'退貨廠商開立折讓單後，成立應付款待抵帳款，並沖銷上期暫估單。',depts:['p','f'],
+   steps:[
+    {dept:'p',num:'採購端 — 步驟 1',title:'確認倉退單狀態為「已過帳」',desc:'確認倉退單已完成「已過帳」狀態，存貨已從系統扣除。',principle:'已過帳代表退貨已實際發生且帳務生效。未過帳就進行折讓立帳，會造成存貨已退出但帳上還在，帳實不符。',error:null,subs:null,tags:[{t:'倉退單',c:'td2'},{t:'過帳確認',c:'tc2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 2',title:'執行 aapp320 生成對帳單 aapt110',desc:'執行 aapp320 生成 aapt110，對帳來源選「5：發票扣抵單立帳」（與 AAP008 不同）。',principle:'「2：進貨發票立帳」成立應付帳款（公司欠廠商）；「5：發票扣抵單立帳」成立折讓應付待抵（廠商欠公司）。兩者方向相反，選錯後續沖帳會出問題。',error:'常見錯誤：誤選「2：進貨發票立帳」而非「5：發票扣抵單立帳」，導致單據性質錯誤，整個流程需重來。',subs:null,tags:[{t:'aapp320',c:'ts2'},{t:'aapt110',c:'ts2'},{t:'發票扣抵單立帳',c:'ta2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 3',title:'查看 aapt110 並印出送審',desc:'查看生成的 aapt110 單據，確認折讓金額、廠商資訊正確，印出紙本送主管簽核。',principle:null,error:null,subs:null,tags:[{t:'aapt110',c:'ts2'},{t:'紙本送審',c:'tc2'}],note:null},
+    {dept:'p',num:'採購端 — 步驟 4',title:'主管同意後移交財務單位',desc:'主管簽核同意後，採購請款人將文件送交財務單位進行後續流程作業。',principle:null,error:null,subs:null,tags:[{t:'主管同意',c:'tc2'},{t:'移交財務',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 5',title:'執行 aapp132 拋轉至 aapt340',desc:'執行 aapp132，此流程拋轉目標是 aapt340（折讓應付單），而非一般應付的 aapt300。',principle:'aapt300 = 正向應付（公司欠廠商貨款）；aapt340 = 反向折讓應付（廠商欠公司退貨金額）。性質相反，確認後產生應付待抵單供後續抵扣貨款。',error:null,subs:null,tags:[{t:'aapp132',c:'ts2'},{t:'aapt340',c:'ts2'},{t:'拋轉折讓應付',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 6',title:'查看 aapt340 並檢核立帳內容',desc:'開啟 aapt340，系統自動沖銷上期暫估（如有）。核對折讓金額、廠商、分錄底稿，處理好的應付單送主管覆審。',principle:'若這筆倉退月底曾做過 AAP009 暫估，系統自動執行：借倉退暫估應付 / 貸應付帳款。暫估被正式折讓應付取代，帳務完整。',error:null,subs:null,tags:[{t:'aapt340',c:'ts2'},{t:'自動沖暫估',c:'ta2'},{t:'分錄底稿維護',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 7',title:'主管覆審並確認單據',desc:'主管覆審無誤，將單據執行確認，系統自動產生應付待抵單。',principle:'確認後產生的應付待抵單，後續可在 AAP008 或 AAP007-B 請款時，抵扣貨款，減少實際付款金額。',error:null,subs:null,tags:[{t:'主管覆審',c:'tc2'},{t:'單據確認',c:'ta2'}],note:'確認後系統自動產生應付待抵單，後續抵扣貨款使用。',nt:'n'},
+    {dept:'f',num:'財務端 — 步驟 8',title:'生成傳票並執行後續付款',desc:'確認後的單據生成傳票，進行後續付款處理，相關流程對應 AAP019。',principle:null,error:null,subs:null,tags:[{t:'傳票生成',c:'ta2'},{t:'付款處理',c:'ta2'}],note:null}
+   ]},
+  {id:'AGL002',label:'AGL002',title:'日常會計作業流程',def:'處理一般日常會計傳票編制，涵蓋各子模組拋轉及人工傳票輸入。',depts:['f'],
+   steps:[
+    {dept:'f',num:'財務端 — 步驟 1',title:'由子模組底稿拋轉至正式傳票',desc:'各子模組（AR/AP/FA/NM/FM/XC/CE/RA）先產生分錄底稿，會計確認底稿正確後，拋轉生成正式傳票。',principle:'AGL002 是所有 AAP 流程的最終匯集點。所有應付帳款傳票（來源碼 AP）都在這裡完成過帳歸檔，才真正進入總帳，影響財務報表。底稿是草稿，此時可修改；拋轉後確認過帳，修改程序繁複。',error:null,subs:[{l:'AP',d:'應付模組（AAP007-A/B、AAP008、AAP009、AAP010 產生的傳票）'},{l:'AR',d:'應收模組'},{l:'FA',d:'固資模組（折舊、處分）'},{l:'NM',d:'票據資金模組'},{l:'FM',d:'投資融資模組'},{l:'XC',d:'成本模組'},{l:'CE',d:'結轉傳票（月底損益結轉）'},{l:'RA',d:'迴轉傳票（下期自動沖銷上期暫估）'}],tags:[{t:'分錄底稿',c:'ts2'},{t:'拋轉正式傳票',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 2',title:'輸入傳票內容',desc:'前端系統拋轉（來源碼非 GL）：只能補充摘要，不能修改分錄。人工輸入（來源碼 GL）：需輸入完整傳票內容含科目、金額、核算項及立沖資料。',principle:'為什麼前端拋轉的傳票不能修改分錄？因為分錄是從前端單據自動產生的，若會計可隨意修改，就失去前端單據的控制意義，破壞內部控制。',error:'常見錯誤：AP 來源傳票摘要填寫過於簡略。建議填寫：流程編號 + 廠商名稱 + 月份，例如「AAP008-台灣電子-2024/01」。',subs:null,tags:[{t:'傳票輸入',c:'ta2'},{t:'摘要補充',c:'ta2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 3',title:'傳票確認並進入簽核流程',desc:'傳票確認後進入紙本或電子簽核流程，簽核完成後才能列印正式傳票憑證。',principle:'簽核完成才能列印的原因：避免未審核的傳票被當作正式憑證使用。這是內部控制要求。',error:null,subs:null,tags:[{t:'傳票確認',c:'tc2'},{t:'簽核流程',c:'tc2'},{t:'列印傳票',c:'td2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 4',title:'傳票審核、過帳並歸檔',desc:'簽核完成後進行最後三個動作：傳票審核（最終確認）→ 過帳（正式記入總帳）→ 歸檔（連同憑證整理存放）。',principle:'過帳是整個帳務流程的終點。過帳後：各科目餘額更新、財務報表數字更新、傳票狀態變「已過帳」且不可再修改。在此之前所有單據都只是系統資料，過帳後才真正影響財務報表。',error:'常見錯誤：過帳前未再次確認傳票內容。過帳後若有錯誤，需透過沖銷傳票修正，程序繁複且影響報表。務必在過帳前完成最終確認。',subs:null,tags:[{t:'傳票審核',c:'tc2'},{t:'過帳',c:'ta2'},{t:'歸檔',c:'ta2'}],note:null}
+   ]},
+  {id:'AAP019',label:'AAP019',title:'應付帳款付款流程',def:'依應付請款逐筆完成核銷，並送交資金單位依時程匯款。',depts:['f'],
+   steps:[
+    {dept:'f',num:'財務端 — 步驟 1',title:'執行 aapp400 生成 aapt420',desc:'每日或準備出帳前，執行 aapp400，系統掃描所有已確認但尚未付款的應付帳款，批次產生 aapt420 付款核銷單。',principle:'AAP019 是整個應付帳款作業的最後一哩路。前面所有流程建立的應付帳款，最終透過此流程完成付款核銷，實際匯款給廠商。',error:null,subs:null,tags:[{t:'aapp400',c:'ts2'},{t:'aapt420',c:'ts2'},{t:'拋轉未付款',c:'ta2'}],note:'可先用 aapq400 查詢未付未沖單據，模擬本次付款金額，確認無異常後再正式執行 aapp400。',nt:'n'},
+    {dept:'f',num:'財務端 — 步驟 2',title:'查詢 aapt420 付款核銷單內容',desc:'逐筆核對款別方式是否正確；若款別為「20：銀行電匯款」，須確認受款帳戶資訊（銀行名稱、分行、帳號、戶名）維護完整。確認後產生分錄底稿。',principle:'款別方式決定資金單位用什麼方式匯款：10=現金、20=銀行電匯、30=票據。選錯款別，資金單位會用錯誤方式付款，事後更正麻煩。',error:'常見錯誤：廠商換了銀行帳戶但系統未更新，導致匯到舊帳戶。每次付款前確認受款帳戶是否為最新資料，有疑慮時電話向廠商確認。',subs:null,tags:[{t:'aapt420',c:'ts2'},{t:'款別核對',c:'tc2'},{t:'受款帳戶',c:'tc2'}],note:null},
+    {dept:'f',num:'財務端 — 步驟 3',title:'生成總帳傳票並進行付款',desc:'確認好的核銷單生成總帳傳票，後續資金單位依指定付款方式（銀行電匯或開立應付票）處理匯款（適用台灣地區）。',principle:'一般付款分錄：借應付帳款 / 貸銀行存款。有折讓待抵分錄：借應付帳款 / 貸應付待抵 + 銀行存款（實際付款金額 = 應付總額 – 待抵金額）。',error:null,subs:null,tags:[{t:'總帳傳票',c:'ta2'},{t:'應付票',c:'td2'},{t:'銀行匯款',c:'ta2'}],note:null}
+   ]}
+];
+const modules={
+  prog:[
+    {code:'aapp131',name:'暫估應付批次立帳',desc:'月底執行，批次掃描已過帳但未取得發票的入退庫單，自動產生 aapt320 暫估應付憑證。',flows:['AAP009']},
+    {code:'aapp132',name:'請款單拋轉應付帳款單',desc:'將 aapt110 對帳單拋轉至財務模組。一般應付→aapt300；折讓應付→aapt340。',flows:['AAP007-B','AAP008','AAP010']},
+    {code:'aapp134',name:'預付訂金拋轉應付單',desc:'將採購單訂金資訊轉換為 aapt310 預付請款單。採購模組與財務模組的橋梁。',flows:['AAP007-A']},
+    {code:'aapp320',name:'生成供應商對帳單',desc:'彙整入庫/倉退資訊產生 aapt110。對帳方式 2=進貨發票立帳；5=發票扣抵單立帳。',flows:['AAP007-B','AAP008','AAP010']},
+    {code:'aapp400',name:'應付未付款拋轉付款核銷單',desc:'掃描已確認但尚未付款的應付帳款，依付款到期日批次產生 aapt420 付款核銷單。',flows:['AAP019']}
+  ],
+  doc:[
+    {code:'aapt110',name:'供應商對帳單',desc:'採購端月結整帳核心單據。登錄發票明細、併入退倉單、挑選「27：其他待抵單」均在此操作。',flows:['AAP007-B','AAP008','AAP010']},
+    {code:'aapt300',name:'應付帳款單',desc:'一般應付帳款單據。財務端核對立帳、維護分錄底稿的主要作業畫面。自動沖暫估/預付待抵。',flows:['AAP007-B','AAP008']},
+    {code:'aapt310',name:'預付請款單',desc:'由 aapp134 產生。財務主管確認後自動產生待抵單，狀態鎖定不可修改。',flows:['AAP007-A']},
+    {code:'aapt320',name:'暫估應付憑證',desc:'由 aapp131 批次產生。需逐項檢核五大項目：性質、類別、科目（實科目）、應付款日、單身科目一致性。',flows:['AAP009']},
+    {code:'aapt340',name:'折讓應付單',desc:'倉退折讓專用。性質與 aapt300 相反（廠商欠公司）。確認後產生應付待抵單供後續抵扣。',flows:['AAP010']},
+    {code:'aapt420',name:'付款核銷單',desc:'由 aapp400 批次產生。記錄付款明細及款別方式，確認後生成總帳傳票。',flows:['AAP019']},
+    {code:'apmt530',name:'入庫單維護作業',desc:'確認入庫單「已過帳」狀態，代表存貨正式入帳。月結前必須確認。',flows:['AAP007-B','AAP008']},
+    {code:'apmt570',name:'入庫單維護（暫估用）',desc:'暫估作業前，財務端核對需求部門主管是否已完成入庫單確認/過帳。',flows:['AAP009']},
+    {code:'apmt580',name:'採購倉退維護作業',desc:'暫估作業前，財務端核對需求部門主管是否已完成倉退單確認/過帳（扣帳）。',flows:['AAP009']}
+  ],
+  query:[
+    {code:'aapq130',name:'未立暫估及未立帳查詢',desc:'月底結帳前掃描本月哪些入庫單還未立帳或暫估，避免漏帳影響當月財務報表。',flows:['AAP007-B','AAP008']},
+    {code:'aapq160',name:'採購單訂金立帳查詢',desc:'查詢尚未申請預付的採購資料，協助採購端掌握待處理的預付作業清單。',flows:['AAP007-A']},
+    {code:'aapq400',name:'未付未沖單據查詢',desc:'執行 aapp400 前模擬本次付款金額及廠商清單，預覽確認後再正式執行，避免付錯或漏付。',flows:['AAP019']}
+  ]
+};
+
+let curFlowIdx=0,curStep=0,curDept='p';
+
+function showOverview(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-overview').classList.add('active');
+}
+function showFlow(idx){
+  curFlowIdx=idx;
+  const f=flows[idx];
+  curDept=f.depts[0];
+  curStep=0;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-flow').classList.add('active');
+  renderFlow();
+}
+function showModuleRef(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-modules').classList.add('active');
+  renderModules();
+}
+
+function renderOverview(){
+  const grid=document.getElementById('flow-grid');
+  grid.innerHTML=flows.map((f,i)=>{
+    const badge=f.id.startsWith('AGL')?'bc-o':'bc-p';
+    return `<div class="flow-card" onclick="showFlow(${i})">
+      <div class="fc-badge ${badge}">${f.label}</div>
+      <div class="fc-title">${f.title}</div>
+      <div class="fc-def">${f.def}</div>
+      <div class="fc-meta">
+        ${f.depts.includes('p')?'<span class="fc-tag ft-p">採購端</span>':''}
+        ${f.depts.includes('f')?'<span class="fc-tag ft-f">財務端</span>':''}
+        <span class="fc-tag" style="background:var(--color-background-secondary);color:var(--color-text-secondary)">${f.steps.length} 步驟</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFlow(){
+  const f=flows[curFlowIdx];
+  const isP=curDept==='p';
+  document.getElementById('breadcrumb').innerHTML=`<span>${f.label}</span>`;
+  document.getElementById('fv-code').innerHTML=`<span class="tag ts2">${f.label}</span>`;
+  document.getElementById('fv-title').textContent=f.title;
+  document.getElementById('fv-def').textContent=f.def;
+  const deptTabs=document.getElementById('dept-tabs');
+  let dtHtml='';
+  if(f.depts.includes('p'))dtHtml+=`<button class="dt${curDept==='p'?' ap':''}" onclick="setDept('p')">採購端</button>`;
+  if(f.depts.includes('f'))dtHtml+=`<button class="dt${curDept==='f'?' af':''}" onclick="setDept('f')">財務端</button>`;
+  deptTabs.innerHTML=dtHtml;
+  const ds=f.steps.filter(s=>s.dept===curDept);
+  const s=ds[curStep];
+  const pct=((curStep+1)/ds.length)*100;
+  const fill=document.getElementById('pfill');
+  fill.className='pfill '+(curDept==='p'?'bp':'bf');
+  fill.style.width=pct+'%';
+  let html='<div class="step-card">';
+  html+=`<div class="snum ${curDept==='p'?'snp':'snf'}">${s.num}</div>`;
+  html+=`<div class="stitle">${s.title}</div>`;
+  html+=`<div class="content-tabs">
+    <button class="ctab active" onclick="switchTab(this,'tab-op')">操作說明</button>
+    <button class="ctab" onclick="switchTab(this,'tab-why')">作業原理</button>
+    ${s.error?'<button class="ctab" onclick="switchTab(this,\'tab-err\')">常見錯誤</button>':''}
+  </div>`;
+  html+=`<div class="ctab-content active" id="tab-op">`;
+  html+=`<div class="sdesc">${s.desc}</div>`;
+  if(s.subs){html+='<div class="subs">';s.subs.forEach(sub=>{html+=`<div class="sub"><b>${sub.l}</b>${sub.d}</div>`;});html+='</div>';}
+  if(s.note){const cls=s.nt==='i'?'info-box':'note-box';const icon=s.nt==='i'?'ti-info-circle':'ti-alert-triangle';html+=`<div class="${cls}"><i class="ti ${icon}" style="margin-right:4px"></i>${s.note}</div>`;}
+  if(s.tags){html+='<div class="tags">';s.tags.forEach(t=>{html+=`<span class="tag ${t.c}">${t.t}</span>`;});html+='</div>';}
+  html+='</div>';
+  html+=`<div class="ctab-content" id="tab-why">`;
+  if(s.principle){html+=`<div class="principle-box" style="border-left-color:${curDept==='p'?'#378ADD':'#1D9E75'}"><i class="ti ti-bulb" style="margin-right:4px"></i>${s.principle}</div>`;}
+  else{html+='<div class="sdesc" style="font-style:italic">此步驟為標準操作，無特殊原理說明。</div>';}
+  html+='</div>';
+  if(s.error){html+=`<div class="ctab-content" id="tab-err"><div class="error-box"><i class="ti ti-alert-triangle" style="margin-right:4px"></i>${s.error}</div></div>`;}
+  html+='</div>';
+  document.getElementById('step-content').innerHTML=html;
+  document.getElementById('scount').textContent=`${curStep+1} / ${ds.length}`;
+  document.getElementById('btn-prev').disabled=curStep===0;
+  const nb=document.getElementById('btn-next');
+  if(curStep===ds.length-1){
+    nb.innerHTML='完成 ✓';
+    nb.className='nb2 '+(curDept==='p'?'pp':'pf');
+    nb.onclick=showDone;
+    nb.disabled=false;
+  } else {
+    nb.innerHTML='下一步 <i class="ti ti-arrow-right"></i>';
+    nb.className='nb2 '+(curDept==='p'?'pp':'pf');
+    nb.onclick=()=>navStep(1);
+    nb.disabled=false;
+  }
+}
+
+function switchTab(btn,id){
+  btn.closest('.step-card').querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.step-card').querySelectorAll('.ctab-content').forEach(t=>t.classList.remove('active'));
+  const el=btn.closest('.step-card').querySelector('#'+id);
+  if(el)el.classList.add('active');
+}
+
+function setDept(d){curDept=d;curStep=0;renderFlow();}
+function navStep(dir){
+  const f=flows[curFlowIdx];
+  const ds=f.steps.filter(s=>s.dept===curDept);
+  const ni=curStep+dir;
+  if(ni>=0&&ni<ds.length){curStep=ni;renderFlow();}
+}
+function showDone(){
+  const f=flows[curFlowIdx];
+  document.getElementById('step-content').innerHTML=`<div class="done-wrap"><div style="font-size:28px;color:#1D9E75;margin-bottom:10px"><i class="ti ti-circle-check"></i></div><h3>${curDept==='p'?'採購端':'財務端'}流程完成</h3><p>${f.label} 此階段已全部完成。</p><button class="rb" onclick="restart()"><i class="ti ti-refresh"></i> 重新開始</button></div>`;
+  document.getElementById('btn-prev').disabled=true;
+  document.getElementById('btn-next').disabled=true;
+  document.getElementById('pfill').style.width='100%';
+}
+function restart(){curStep=0;document.getElementById('btn-next').disabled=false;renderFlow();}
+
+function renderModules(){
+  const c=document.getElementById('module-content');
+  let h='';
+  const sections=[{label:'批次作業程式（aapp）',key:'prog',badge:'ts2'},{label:'單據維護作業（aapt / apmt）',key:'doc',badge:'ta2'},{label:'查詢作業（aapq）',key:'query',badge:'tc2'}];
+  sections.forEach(sec=>{
+    h+=`<div class="sec-label">${sec.label}</div><div class="module-grid">`;
+    modules[sec.key].forEach(m=>{
+      h+=`<div class="mod-card"><div class="mod-code-badge ${sec.badge}">${m.code}</div><div class="mod-name">${m.name}</div><div class="mod-desc">${m.desc}</div><div class="mod-flows">${m.flows.map(f=>`<span class="mod-flow-tag ts2">${f}</span>`).join('')}</div></div>`;
+    });
+    h+='</div>';
+  });
+  c.innerHTML=h;
+}
+
+renderOverview();
+</script>
+</body>
+</html>

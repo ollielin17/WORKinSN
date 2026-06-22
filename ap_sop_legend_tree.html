@@ -1,0 +1,286 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:transparent;font-family:var(--font-sans,"Anthropic Sans",sans-serif)}
+svg text{font-family:var(--font-sans,"Anthropic Sans",sans-serif)}
+.nd{cursor:pointer}
+.nd:hover rect,.nd:hover ellipse,.nd:hover polygon{opacity:.82}
+#tt{position:fixed;background:var(--color-background-primary);border:1px solid var(--color-border-secondary);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--color-text-primary);max-width:240px;line-height:1.7;pointer-events:none;z-index:999;display:none;white-space:pre-wrap;box-shadow:0 4px 16px rgba(0,0,0,.13)}
+</style>
+
+<svg width="100%" viewBox="0 0 900 1060" role="img">
+<title>應付帳款SOP樹狀圖－區分產出單據與拋轉作業代號</title>
+<desc>圓角矩形為產出單據，六邊形為拋轉/批次作業，顏色對應各SOP流程</desc>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<!-- ══════════ LEGEND ══════════ -->
+<rect x="30" y="18" width="840" height="52" rx="8" fill="none" stroke="var(--color-border-tertiary)" stroke-width="1"/>
+<!-- 產出單據 -->
+<rect x="50" y="30" width="80" height="28" rx="6" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+<text x="90" y="49" text-anchor="middle" font-size="11" font-weight="500" fill="#085041">aapt300</text>
+<text x="185" y="49" font-size="11" fill="var(--color-text-secondary)">產出單據（圓角矩形）</text>
+<!-- 拋轉作業 -->
+<polygon points="360,30 420,30 440,44 420,58 360,58 340,44" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+<text x="390" y="49" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp132</text>
+<text x="455" y="49" font-size="11" fill="var(--color-text-secondary)">拋轉／批次作業（六邊形）</text>
+<!-- 色塊說明 -->
+<rect x="640" y="33" width="10" height="10" rx="2" fill="#7F77DD"/><text x="655" y="43" font-size="10" fill="var(--color-text-secondary)">AAP007</text>
+<rect x="700" y="33" width="10" height="10" rx="2" fill="#1D9E75"/><text x="715" y="43" font-size="10" fill="var(--color-text-secondary)">AAP008</text>
+<rect x="640" y="52" width="10" height="10" rx="2" fill="#D85A30"/><text x="655" y="62" font-size="10" fill="var(--color-text-secondary)">AAP009</text>
+<rect x="700" y="52" width="10" height="10" rx="2" fill="#D4537E"/><text x="715" y="62" font-size="10" fill="var(--color-text-secondary)">AAP010</text>
+<rect x="775" y="40" width="10" height="10" rx="2" fill="#BA7517"/><text x="790" y="51" font-size="10" fill="var(--color-text-secondary)">AAP019</text>
+
+<!-- ══════════ ROOT ══════════ -->
+<path d="M450 106 L240 155" fill="none" stroke="#7F77DD" stroke-width="1.6" marker-end="url(#ar)"/>
+<path d="M450 106 L390 155" fill="none" stroke="#1D9E75" stroke-width="1.6" marker-end="url(#ar)"/>
+<path d="M450 106 L560 155" fill="none" stroke="#D85A30" stroke-width="1.6" marker-end="url(#ar)"/>
+<path d="M450 106 L700 155" fill="none" stroke="#D4537E" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="310" y="128" font-size="10" fill="#7F77DD">含訂金</text>
+<text x="400" y="140" font-size="10" fill="#1D9E75">一般入庫</text>
+<text x="530" y="128" font-size="10" fill="#D85A30">無發票</text>
+<text x="624" y="128" font-size="10" fill="#D4537E">倉退折讓</text>
+
+<g class="nd" onclick="tip(event,'採購活動\n所有應付流程的起點')">
+  <ellipse cx="450" cy="90" rx="90" ry="26" fill="#534AB7" stroke="#3C3489" stroke-width="1.5"/>
+  <text x="450" y="87" text-anchor="middle" font-size="13" font-weight="500" fill="#EEEDFE">採購活動</text>
+  <text x="450" y="102" text-anchor="middle" font-size="10" fill="#AFA9EC">流程起點</text>
+</g>
+
+<!-- ══════════ L1 標題列 ══════════ -->
+<!-- AAP007 -->
+<g class="nd" onclick="tip(event,'AAP007 採購預付請款\n供應商收取訂金時啟動\n依帳期分不開發票/應開發票兩類')">
+  <rect x="148" y="155" width="184" height="42" rx="9" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.8"/>
+  <text x="240" y="172" text-anchor="middle" font-size="12" font-weight="500" fill="#3C3489">AAP007</text>
+  <text x="240" y="188" text-anchor="middle" font-size="10" fill="#534AB7">採購預付請款</text>
+</g>
+<!-- AAP008 -->
+<g class="nd" onclick="tip(event,'AAP008 入庫發票應付立帳\n採購月結後以發票正式成立應付帳款\n可同步沖 AAP009 暫估、AAP007 預付')">
+  <rect x="298" y="155" width="184" height="42" rx="9" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.8"/>
+  <text x="390" y="172" text-anchor="middle" font-size="12" font-weight="500" fill="#085041">AAP008</text>
+  <text x="390" y="188" text-anchor="middle" font-size="10" fill="#0F6E56">入庫發票立帳</text>
+</g>
+<!-- AAP009 -->
+<g class="nd" onclick="tip(event,'AAP009 暫估應付立帳\n月底前無發票，先暫估認列成本\n取得發票後由 AAP008 自動沖銷')">
+  <rect x="468" y="155" width="184" height="42" rx="9" fill="#FAECE7" stroke="#D85A30" stroke-width="1.8"/>
+  <text x="560" y="172" text-anchor="middle" font-size="12" font-weight="500" fill="#4A1B0C">AAP009</text>
+  <text x="560" y="188" text-anchor="middle" font-size="10" fill="#993C1D">暫估應付立帳</text>
+</g>
+<!-- AAP010 -->
+<g class="nd" onclick="tip(event,'AAP010 倉退折讓待抵立帳\n退貨後開立折讓扣抵憑證\n建立待抵單，可沖暫估，最終進 AAP019')">
+  <rect x="608" y="155" width="184" height="42" rx="9" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.8"/>
+  <text x="700" y="172" text-anchor="middle" font-size="12" font-weight="500" fill="#4B1528">AAP010</text>
+  <text x="700" y="188" text-anchor="middle" font-size="10" fill="#993556">倉退折讓立帳</text>
+</g>
+
+<!-- ══════════ 各 SOP 步驟 ══════════
+  六邊形 = 拋轉/批次作業  polygon points 以中心(cx,cy)、寬w=90、高h=28計算
+  helper: cx-45,cy-14  cx+45,cy-14  cx+54,cy  cx+45,cy+14  cx-45,cy+14  cx-54,cy
+  圓角矩形 = 產出單據  rx=6
+  ══════════════════════════════════ -->
+
+<!-- ─── AAP007 欄 cx=240 ─── -->
+<path d="M240 197 L240 226" fill="none" stroke="#7F77DD" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp134 -->
+<g class="nd" onclick="tip(event,'aapp134 採購預付批次立帳\n【拋轉作業】\n將採購單訂金資訊批次拋轉\n→ 生成 aapt310 預付憑證')">
+  <polygon points="195,226 285,226 304,240 285,254 195,254 176,240" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="240" y="244" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp134</text>
+</g>
+<path d="M240 254 L240 282" fill="none" stroke="#7F77DD" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt310 -->
+<g class="nd" onclick="tip(event,'aapt310 採購預付憑證\n【產出單據】\n・有發票：維護發票明細\n・印出紙本送主管簽核\n・財務維護科目後主管確認\n→ 生成預付待抵單')">
+  <rect x="172" y="282" width="136" height="36" rx="6" fill="#F5F4FE" stroke="#7F77DD" stroke-width="1.2"/>
+  <text x="240" y="296" text-anchor="middle" font-size="11" font-weight="500" fill="#3C3489">aapt310</text>
+  <text x="240" y="311" text-anchor="middle" font-size="10" fill="#534AB7">預付憑證</text>
+</g>
+<path d="M240 318 L240 346" fill="none" stroke="#7F77DD" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapq342 待抵單 -->
+<g class="nd" onclick="tip(event,'aapq342 待抵預付單查詢\n【產出單據】\n預付確認後系統生成待抵單\n後續入庫時由 AAP008 沖銷使用')">
+  <rect x="172" y="346" width="136" height="36" rx="6" fill="#F5F4FE" stroke="#7F77DD" stroke-width="1.2"/>
+  <text x="240" y="360" text-anchor="middle" font-size="11" font-weight="500" fill="#3C3489">aapq342</text>
+  <text x="240" y="375" text-anchor="middle" font-size="10" fill="#534AB7">預付待抵單</text>
+</g>
+<!-- 007待抵 → 008沖預付（虛線跨欄） -->
+<path d="M308 364 Q350 364 360 300" fill="none" stroke="#7F77DD" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ar)" opacity=".6"/>
+<text x="345" y="348" font-size="9" fill="#7F77DD">入庫時沖預付</text>
+<!-- 007 → AAP019 -->
+<path d="M240 382 L240 430 Q240 470 340 530" fill="none" stroke="#7F77DD" stroke-width="1.1" stroke-dasharray="4 3" marker-end="url(#ar)" opacity=".55"/>
+
+<!-- ─── AAP008 欄 cx=390 ─── -->
+<path d="M390 197 L390 226" fill="none" stroke="#1D9E75" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp320 -->
+<g class="nd" onclick="tip(event,'aapp320 入庫發票批次生成\n【拋轉作業】\n將供應商對帳資訊批次生成對帳單\n匯總條件：1:交易對象\n對帳方式：2:進貨發票立帳')">
+  <polygon points="345,226 435,226 454,240 435,254 345,254 326,240" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="390" y="244" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp320</text>
+</g>
+<path d="M390 254 L390 282" fill="none" stroke="#1D9E75" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt110 -->
+<g class="nd" onclick="tip(event,'aapt110 廠商貨款對帳\n【產出單據】\n採購人員核對發票金額\n如有預付：挑選「27:其他待抵單」\n確認後印出送主管簽核')">
+  <rect x="322" y="282" width="136" height="36" rx="6" fill="#EBF9F4" stroke="#1D9E75" stroke-width="1.2"/>
+  <text x="390" y="296" text-anchor="middle" font-size="11" font-weight="500" fill="#085041">aapt110</text>
+  <text x="390" y="311" text-anchor="middle" font-size="10" fill="#0F6E56">廠商貨款對帳單</text>
+</g>
+<path d="M390 318 L390 346" fill="none" stroke="#1D9E75" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp132 -->
+<g class="nd" onclick="tip(event,'aapp132 進項發票批次立帳\n【拋轉作業】\n將請款單拋轉至 aapt300\n此時系統自動沖暫估及預付')">
+  <polygon points="345,346 435,346 454,360 435,374 345,374 326,360" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="390" y="364" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp132</text>
+</g>
+<path d="M390 374 L390 402" fill="none" stroke="#1D9E75" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt300 -->
+<g class="nd" onclick="tip(event,'aapt300 應付帳款憑證\n【產出單據】\n・自動沖暫估（來自 AAP009）\n・自動沖預付（來自 AAP007）\n・財務維護發票明細及分錄底稿\n・確認 → 生成傳票 → AAP019')">
+  <rect x="322" y="402" width="136" height="36" rx="6" fill="#EBF9F4" stroke="#1D9E75" stroke-width="1.2"/>
+  <text x="390" y="416" text-anchor="middle" font-size="11" font-weight="500" fill="#085041">aapt300</text>
+  <text x="390" y="431" text-anchor="middle" font-size="10" fill="#0F6E56">應付帳款憑證</text>
+</g>
+<!-- 008 → AAP019 -->
+<path d="M390 438 L390 530" fill="none" stroke="#1D9E75" stroke-width="1.4" marker-end="url(#ar)"/>
+
+<!-- ─── AAP009 欄 cx=560 ─── -->
+<path d="M560 197 L560 226" fill="none" stroke="#D85A30" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp131 -->
+<g class="nd" onclick="tip(event,'aapp131 暫估應付批次立帳\n【拋轉作業】\n月底執行，批次處理無發票入庫\n帳款單別：應付/倉退/費用\nQBE條件：入退庫單號碼')">
+  <polygon points="515,226 605,226 624,240 605,254 515,254 496,240" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="560" y="244" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp131</text>
+</g>
+<path d="M560 254 L560 282" fill="none" stroke="#D85A30" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt320 -->
+<g class="nd" onclick="tip(event,'aapt320 暫估應付憑證\n【產出單據】\n需確認：\n・帳款科目（需為實科目）\n・付款到期日（影響帳齡）\n・存貨科目與帳款科目一致\n取得發票後由 AAP008 aapt300 自動沖')">
+  <rect x="492" y="282" width="136" height="36" rx="6" fill="#FDF3EF" stroke="#D85A30" stroke-width="1.2"/>
+  <text x="560" y="296" text-anchor="middle" font-size="11" font-weight="500" fill="#4A1B0C">aapt320</text>
+  <text x="560" y="311" text-anchor="middle" font-size="10" fill="#993C1D">暫估應付憑證</text>
+</g>
+<!-- 009 → 008 沖暫估（虛線） -->
+<path d="M492 296 Q458 296 458 390 Q458 416 458 420" fill="none" stroke="#D85A30" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ar)" opacity=".6"/>
+<text x="436" y="364" font-size="9" fill="#D85A30" text-anchor="middle">自動沖銷</text>
+
+<!-- ─── AAP010 欄 cx=700 ─── -->
+<path d="M700 197 L700 226" fill="none" stroke="#D4537E" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp320（010版） -->
+<g class="nd" onclick="tip(event,'aapp320 入庫發票批次生成\n【拋轉作業】（AAP010 使用）\n對帳來源選「5:發票扣抵單立帳」\n與 AAP008 用法相同但來源不同')">
+  <polygon points="655,226 745,226 764,240 745,254 655,254 636,240" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="700" y="244" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp320</text>
+</g>
+<path d="M700 254 L700 282" fill="none" stroke="#D4537E" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt110（010版） -->
+<g class="nd" onclick="tip(event,'aapt110 廠商貨款對帳單\n【產出單據】（AAP010 使用）\n倉退對帳單，印出送主管簽核\n採購主管確認後文件送財務')">
+  <rect x="632" y="282" width="136" height="36" rx="6" fill="#FDF0F5" stroke="#D4537E" stroke-width="1.2"/>
+  <text x="700" y="296" text-anchor="middle" font-size="11" font-weight="500" fill="#4B1528">aapt110</text>
+  <text x="700" y="311" text-anchor="middle" font-size="10" fill="#993556">倉退對帳單</text>
+</g>
+<path d="M700 318 L700 346" fill="none" stroke="#D4537E" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp132（010版） -->
+<g class="nd" onclick="tip(event,'aapp132 進項發票批次立帳\n【拋轉作業】（AAP010 使用）\n將請款單拋轉至 aapt340\n如有暫估則自動沖銷')">
+  <polygon points="655,346 745,346 764,360 745,374 655,374 636,360" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="700" y="364" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp132</text>
+</g>
+<path d="M700 374 L700 402" fill="none" stroke="#D4537E" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt340 -->
+<g class="nd" onclick="tip(event,'aapt340 應付待抵單\n【產出單據】\n倉退折讓扣抵憑證\n・自動沖暫估（如有）\n・財務錄入發票/分錄底稿\n・主管覆審確認 → 傳票 → AAP019')">
+  <rect x="632" y="402" width="136" height="36" rx="6" fill="#FDF0F5" stroke="#D4537E" stroke-width="1.2"/>
+  <text x="700" y="416" text-anchor="middle" font-size="11" font-weight="500" fill="#4B1528">aapt340</text>
+  <text x="700" y="431" text-anchor="middle" font-size="10" fill="#993556">應付待抵單</text>
+</g>
+<!-- 010 → AAP019 -->
+<path d="M700 438 L700 480 Q700 530 560 530" fill="none" stroke="#D4537E" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)" opacity=".7"/>
+
+<!-- ══════════ AAP019 ══════════ -->
+<text x="450" y="524" text-anchor="middle" font-size="10" fill="var(--color-text-secondary)">各流程傳票確認後匯入</text>
+
+<g class="nd" onclick="tip(event,'AAP019 應付帳款付款核銷\n所有應付傳票的最終出口')">
+  <rect x="290" y="530" width="320" height="46" rx="12" fill="#FAEEDA" stroke="#BA7517" stroke-width="2"/>
+  <text x="450" y="549" text-anchor="middle" font-size="13" font-weight="500" fill="#412402">AAP019 應付帳款付款核銷</text>
+  <text x="450" y="566" text-anchor="middle" font-size="10" fill="#854F0B">所有應付傳票最終出口</text>
+</g>
+
+<!-- AAP019 步驟 -->
+<path d="M450 576 L450 604" fill="none" stroke="#BA7517" stroke-width="1.3" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp400 -->
+<g class="nd" onclick="tip(event,'aapp400 請款單整批產生\n【拋轉作業】\n將應付未付款批次拋轉\n→ 生成 aapt420 付款核銷單')">
+  <polygon points="405,604 495,604 514,619 495,634 405,634 386,619" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.4"/>
+  <text x="450" y="622" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp400</text>
+</g>
+<path d="M450 634 L450 662" fill="none" stroke="#BA7517" stroke-width="1.3" marker-end="url(#ar)"/>
+
+<!-- 矩形：aapt420 -->
+<g class="nd" onclick="tip(event,'aapt420 應付核銷維護\n【產出單據】\n・檢核款別（10/20/30）\n・20電匯需核對受款帳戶\n・確認後生成總帳傳票')">
+  <rect x="372" y="662" width="156" height="36" rx="6" fill="#FFFBF0" stroke="#BA7517" stroke-width="1.4"/>
+  <text x="450" y="676" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapt420</text>
+  <text x="450" y="691" text-anchor="middle" font-size="10" fill="#854F0B">付款核銷單</text>
+</g>
+<path d="M450 698 L450 726" fill="none" stroke="#BA7517" stroke-width="1.3" marker-end="url(#ar)"/>
+
+<!-- 六邊：aapp420 -->
+<g class="nd" onclick="tip(event,'aapp420/aglt310 批次產生傳票\n【拋轉作業】\n將確認核銷單生成總帳傳票\n帳務人員確認後送資金單位')">
+  <polygon points="385,726 515,726 534,741 515,756 385,756 366,741" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.4"/>
+  <text x="450" y="745" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">aapp420 / aglt310</text>
+</g>
+
+<!-- 傳票 → 三款別 -->
+<path d="M390 756 Q260 780 220 800" fill="none" stroke="#BA7517" stroke-width="1.2" marker-end="url(#ar)"/>
+<path d="M450 756 L450 800" fill="none" stroke="#BA7517" stroke-width="1.2" marker-end="url(#ar)"/>
+<path d="M510 756 Q640 780 680 800" fill="none" stroke="#BA7517" stroke-width="1.2" marker-end="url(#ar)"/>
+
+<!-- 款別10 -->
+<g class="nd" onclick="tip(event,'10:現金與即期匯款\n手寫匯款單\n適用小額或即期支付')">
+  <rect x="140" y="800" width="160" height="36" rx="6" fill="#FFFBF0" stroke="#FAC775" stroke-width="1.2"/>
+  <text x="220" y="814" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">10 現金/即期</text>
+  <text x="220" y="829" text-anchor="middle" font-size="10" fill="#854F0B">手寫匯款單</text>
+</g>
+<!-- 款別20 -->
+<g class="nd" onclick="tip(event,'20:銀行電匯款\n需確認受款帳戶維護完成\n貸：銀行存款')">
+  <rect x="370" y="800" width="160" height="36" rx="6" fill="#FFFBF0" stroke="#FAC775" stroke-width="1.2"/>
+  <text x="450" y="814" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">20 銀行電匯</text>
+  <text x="450" y="829" text-anchor="middle" font-size="10" fill="#854F0B">確認受款帳號</text>
+</g>
+<!-- 款別30 -->
+<g class="nd" onclick="tip(event,'30:票據類型\n開立應付票據\n貸：應付票據\n進入票據異動流程')">
+  <rect x="600" y="800" width="160" height="36" rx="6" fill="#FFFBF0" stroke="#FAC775" stroke-width="1.2"/>
+  <text x="680" y="814" text-anchor="middle" font-size="11" font-weight="500" fill="#412402">30 票據</text>
+  <text x="680" y="829" text-anchor="middle" font-size="10" fill="#854F0B">應付票據異動</text>
+</g>
+
+<!-- 三款 → 完成 -->
+<path d="M220 836 Q310 870 400 882" fill="none" stroke="#BA7517" stroke-width="1" marker-end="url(#ar)"/>
+<path d="M450 836 L450 882" fill="none" stroke="#BA7517" stroke-width="1" marker-end="url(#ar)"/>
+<path d="M680 836 Q590 870 500 882" fill="none" stroke="#BA7517" stroke-width="1" marker-end="url(#ar)"/>
+
+<g class="nd" onclick="tip(event,'付款完成\naapq420 查詢沖銷明細\n帳務人員核對並傳票歸檔')">
+  <rect x="310" y="882" width="280" height="40" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1.4"/>
+  <text x="450" y="898" text-anchor="middle" font-size="12" font-weight="500" fill="#2C2C2A">付款完成・傳票歸檔</text>
+  <text x="450" y="914" text-anchor="middle" font-size="10" fill="#5F5E5A">aapq420 查詢沖銷明細</text>
+</g>
+
+</svg>
+
+<div id="tt"></div>
+<script>
+function tip(e,t){
+  var el=document.getElementById('tt');
+  el.textContent=t;
+  el.style.display='block';
+  el.style.left=(e.clientX+14)+'px';
+  el.style.top=(e.clientY-10)+'px';
+  clearTimeout(el._h);
+  el._h=setTimeout(function(){el.style.display='none'},5000);
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.nd'))document.getElementById('tt').style.display='none';
+});
+</script>
